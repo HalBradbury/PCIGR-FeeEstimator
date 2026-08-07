@@ -1,0 +1,1622 @@
+<!DOCTYPE html>
+<html lang="en-CA">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PCIGR Fee Estimator</title>
+<style>
+/* ============================================================
+   Tokens
+   ============================================================ */
+:root {
+  --ground:      #f6f7f6;
+  --surface:     #ffffff;
+  --surface-2:   #eef1f0;
+  --ink:         #15191a;
+  --ink-2:       #5c6663;
+  --ink-3:       #8a9491;
+  --rule:        #d5dcd9;
+  --rule-strong: #b3bdb9;
+  --accent:      #14675f;
+  --accent-soft: #e2eeec;
+  --accent-ink:  #ffffff;
+  --warn:        #8f550f;
+  --warn-soft:   #f6ecdd;
+
+  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-data: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+
+  --s1: 0.25rem; --s2: 0.5rem;  --s3: 0.75rem; --s4: 1rem;
+  --s5: 1.5rem;  --s6: 2rem;    --s7: 3rem;    --s8: 4rem;
+
+  --measure: 62ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --ground:      #101413;
+    --surface:     #171c1b;
+    --surface-2:   #1f2524;
+    --ink:         #e7edeb;
+    --ink-2:       #9aa5a2;
+    --ink-3:       #6f7b78;
+    --rule:        #2b3231;
+    --rule-strong: #3d4645;
+    --accent:      #57bcae;
+    --accent-soft: #16302d;
+    --accent-ink:  #06201d;
+    --warn:        #d9a35c;
+    --warn-soft:   #2c2317;
+  }
+}
+
+:root[data-theme="dark"] {
+  --ground:      #101413;
+  --surface:     #171c1b;
+  --surface-2:   #1f2524;
+  --ink:         #e7edeb;
+  --ink-2:       #9aa5a2;
+  --ink-3:       #6f7b78;
+  --rule:        #2b3231;
+  --rule-strong: #3d4645;
+  --accent:      #57bcae;
+  --accent-soft: #16302d;
+  --accent-ink:  #06201d;
+  --warn:        #d9a35c;
+  --warn-soft:   #2c2317;
+}
+
+:root[data-theme="light"] {
+  --ground:      #f6f7f6;
+  --surface:     #ffffff;
+  --surface-2:   #eef1f0;
+  --ink:         #15191a;
+  --ink-2:       #5c6663;
+  --ink-3:       #8a9491;
+  --rule:        #d5dcd9;
+  --rule-strong: #b3bdb9;
+  --accent:      #14675f;
+  --accent-soft: #e2eeec;
+  --accent-ink:  #ffffff;
+  --warn:        #8f550f;
+  --warn-soft:   #f6ecdd;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--ink);
+  font-family: var(--font-ui);
+  font-size: 15px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
+p { margin: 0; }
+
+:where(a) { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.num { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+
+.eyebrow {
+  font-size: 0.6875rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.shell {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 var(--s5) var(--s8);
+}
+
+/* ============================================================
+   Masthead
+   ============================================================ */
+.masthead {
+  border-bottom: 1px solid var(--rule);
+  background: var(--surface);
+}
+
+.masthead__inner {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: var(--s5) var(--s5) var(--s4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--s4);
+}
+
+.masthead__title {
+  font-family: var(--font-display);
+  font-size: 1.9rem;
+  line-height: 1.1;
+  letter-spacing: -0.015em;
+}
+
+.masthead__sub {
+  color: var(--ink-2);
+  font-size: 0.875rem;
+  margin-top: var(--s2);
+  max-width: var(--measure);
+}
+
+.instrument-bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--s1) var(--s3);
+  padding: var(--s2) 0 0;
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+}
+
+.instrument-bar span::after {
+  content: " ·";
+  color: var(--rule-strong);
+}
+.instrument-bar span:last-child::after { content: ""; }
+
+.theme-toggle {
+  font: inherit;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  background: transparent;
+  border: 1px solid var(--rule);
+  padding: var(--s1) var(--s3);
+  cursor: pointer;
+}
+.theme-toggle:hover { border-color: var(--rule-strong); color: var(--ink); }
+
+/* ============================================================
+   Layout
+   ============================================================ */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.45fr) minmax(340px, 0.85fr);
+  gap: var(--s7);
+  align-items: start;
+  padding-top: var(--s6);
+}
+
+@media (max-width: 940px) {
+  .layout { grid-template-columns: minmax(0, 1fr); gap: var(--s6); }
+}
+
+/* ============================================================
+   Setup block (tier + sample type)
+   ============================================================ */
+.setup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s5);
+  padding-bottom: var(--s6);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--s6);
+}
+
+.field__label {
+  display: block;
+  margin-bottom: var(--s3);
+}
+
+.field__hint {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  margin-top: var(--s2);
+  max-width: var(--measure);
+}
+
+.segmented {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--rule-strong);
+}
+
+@media (max-width: 560px) {
+  .segmented { grid-template-columns: minmax(0, 1fr); }
+}
+
+.segmented input { position: absolute; opacity: 0; pointer-events: none; }
+
+.segmented label {
+  padding: var(--s3) var(--s4);
+  text-align: center;
+  font-size: 0.8125rem;
+  cursor: pointer;
+  background: var(--surface);
+  border-right: 1px solid var(--rule);
+  transition: background 120ms ease, color 120ms ease;
+}
+.segmented label:last-of-type { border-right: 0; }
+
+@media (max-width: 560px) {
+  .segmented label { border-right: 0; border-bottom: 1px solid var(--rule); text-align: left; }
+  .segmented label:last-of-type { border-bottom: 0; }
+}
+
+.segmented label:hover { background: var(--surface-2); }
+.segmented input:checked + label { background: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.segmented input:focus-visible + label { outline: 2px solid var(--accent); outline-offset: -2px; }
+
+.filters { display: flex; flex-direction: column; gap: var(--s4); }
+
+.chips { display: flex; flex-wrap: wrap; gap: var(--s2); }
+
+.chip {
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: var(--s1) var(--s3);
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink-2);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.chip:hover { border-color: var(--accent); color: var(--ink); }
+.chip[aria-pressed="true"] {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.text-input {
+  font: inherit;
+  width: 100%;
+  max-width: 30rem;
+  padding: var(--s2) var(--s3);
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+
+/* ============================================================
+   Service catalogue
+   ============================================================ */
+.category { margin-bottom: var(--s6); }
+.category[hidden] { display: none; }
+
+.category__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: var(--s2);
+  margin-bottom: var(--s1);
+}
+
+.category__name {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+.category__meta {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.category__note {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  padding: var(--s3) 0 0;
+  max-width: var(--measure);
+}
+
+.item {
+  display: grid;
+  /* The rate column has to hold "$4,500.00 / sample" on one line — the widest
+     combination in the schedule — or the unit wraps beneath the figure. */
+  grid-template-columns: minmax(0, 1fr) 8.5rem 5.5rem 7rem;
+  align-items: center;
+  gap: var(--s3);
+  padding: var(--s3) 0;
+  border-bottom: 1px solid var(--rule);
+}
+.item[hidden] { display: none; }
+
+@media (max-width: 700px) {
+  .item {
+    grid-template-columns: minmax(0, 1fr) 5rem 6.5rem;
+    grid-template-areas: "name name name" "rate qty total";
+  }
+  .item__name  { grid-area: name; }
+  .item__rate  { grid-area: rate; text-align: left; }
+  .item__qty   { grid-area: qty; }
+  .item__total { grid-area: total; }
+}
+
+.item__name { min-width: 0; }
+
+.item__label { display: block; cursor: pointer; }
+
+.item__note {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  margin-top: 2px;
+}
+
+.item__rate {
+  text-align: right;
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  white-space: nowrap;
+}
+
+.item__unit {
+  font-family: var(--font-ui);
+  font-size: 0.6875rem;
+  color: var(--ink-3);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
+
+.item__qty {
+  font: inherit;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+  padding: var(--s2);
+  text-align: right;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.item__qty::-webkit-outer-spin-button,
+.item__qty::-webkit-inner-spin-button { opacity: 0.4; }
+
+.item--active { background: var(--accent-soft); }
+.item--active .item__qty { border-color: var(--accent); }
+
+/* Automatically derived rows read as calculated, not typed. */
+.item--auto .item__qty {
+  border-style: dashed;
+  border-color: var(--accent);
+  color: var(--ink-2);
+}
+.item--auto .item__qty:focus { border-style: solid; }
+
+/* Notes flagging a cost the estimate cannot capture read as a caution. */
+.item__note--caution { color: var(--warn); }
+
+.item__flag {
+  font-size: 0.5625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  border: 1px solid currentColor;
+  padding: 0 3px;
+  white-space: nowrap;
+}
+
+.item__derivation {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--accent);
+  margin-top: 2px;
+}
+.item__derivation[hidden] { display: none; }
+
+.line__badge {
+  font-size: 0.5625rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 3px;
+  vertical-align: 1px;
+  white-space: nowrap;
+}
+
+.item__total {
+  text-align: right;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.875rem;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+.item--active .item__total { color: var(--ink); font-weight: 600; }
+
+/* ============================================================
+   Estimate panel
+   ============================================================ */
+.estimate {
+  position: sticky;
+  top: var(--s5);
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  padding: var(--s5);
+}
+
+@media (max-width: 940px) {
+  .estimate { position: static; }
+}
+
+.estimate__head {
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: var(--s3);
+  margin-bottom: var(--s4);
+}
+
+.estimate__title {
+  font-family: var(--font-display);
+  font-size: 1.3rem;
+  margin-top: var(--s1);
+}
+
+.estimate__tier {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  margin-top: var(--s1);
+}
+
+.lines { display: flex; flex-direction: column; gap: var(--s3); margin-bottom: var(--s4); }
+
+.line { display: flex; align-items: baseline; gap: var(--s2); font-size: 0.875rem; }
+
+.line__name { flex: 0 1 auto; min-width: 0; }
+
+.line__detail {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  font-family: var(--font-data);
+}
+
+.line__leader {
+  flex: 1 1 auto;
+  border-bottom: 1px dotted var(--rule-strong);
+  transform: translateY(-3px);
+  min-width: var(--s4);
+}
+
+.line__value {
+  flex: 0 0 auto;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+}
+
+.lines--empty {
+  color: var(--ink-3);
+  font-size: 0.875rem;
+  font-style: italic;
+  padding: var(--s4) 0;
+  border-bottom: 1px solid var(--rule);
+}
+
+.totals {
+  border-top: 1px solid var(--rule-strong);
+  padding-top: var(--s3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.total-row { display: flex; justify-content: space-between; gap: var(--s3); font-size: 0.875rem; }
+.total-row--sub { color: var(--ink-2); }
+.total-row--surcharge { color: var(--warn); }
+
+.total-row--grand {
+  border-top: 2px solid var(--ink);
+  margin-top: var(--s2);
+  padding-top: var(--s3);
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  align-items: baseline;
+}
+
+.total-row--grand .total-row__value { font-family: var(--font-data); font-weight: 600; }
+
+.flash { animation: flash 420ms ease-out; }
+@keyframes flash {
+  from { background: var(--accent-soft); }
+  to   { background: transparent; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash { animation: none; }
+  * { transition: none !important; }
+}
+
+.surcharges {
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  padding: var(--s4) 0;
+  margin: var(--s4) 0 0;
+  border-top: 1px solid var(--rule);
+}
+
+.check { display: flex; gap: var(--s2); align-items: flex-start; font-size: 0.8125rem; cursor: pointer; }
+.check input { margin-top: 3px; accent-color: var(--accent); }
+.check span small { display: block; color: var(--ink-3); font-size: 0.75rem; }
+
+.actions { display: flex; flex-wrap: wrap; gap: var(--s2); margin-top: var(--s4); }
+
+.btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  padding: var(--s2) var(--s4);
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  cursor: pointer;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.btn:hover { border-color: var(--accent); }
+.btn--primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn--primary:hover { filter: brightness(1.08); }
+
+.disclaimer {
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+  font-size: 0.75rem;
+  color: var(--ink-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+}
+
+.callout {
+  background: var(--warn-soft);
+  border-left: 3px solid var(--warn);
+  padding: var(--s3) var(--s4);
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  margin-top: var(--s4);
+}
+.callout[hidden] { display: none; }
+
+.callout--info {
+  background: var(--accent-soft);
+  border-left-color: var(--accent);
+}
+
+/* ============================================================
+   Print — the estimate becomes the quote
+   ============================================================ */
+.print-only { display: none; }
+
+@media print {
+  @page { margin: 18mm; }
+
+  :root {
+    --ground: #fff; --surface: #fff; --surface-2: #fff;
+    --ink: #000; --ink-2: #333; --ink-3: #555;
+    --rule: #bbb; --rule-strong: #666;
+    --accent: #000; --accent-soft: #fff; --warn: #000; --warn-soft: #fff;
+  }
+
+  body { font-size: 11pt; background: #fff; }
+
+  .masthead__inner { padding: 0 0 var(--s3); }
+  .shell { padding: 0; max-width: none; }
+  .layout { display: block; padding-top: var(--s4); }
+
+  .no-print,
+  .setup,
+  .catalogue,
+  .instrument-bar,
+  .theme-toggle,
+  .actions,
+  .surcharges { display: none !important; }
+
+  .print-only { display: block; }
+
+  .estimate {
+    position: static;
+    border: 0;
+    padding: 0;
+  }
+
+  .line__leader { border-bottom-color: #999; }
+}
+</style>
+</head>
+<body>
+
+<header class="masthead">
+  <div class="masthead__inner">
+    <div>
+      <p class="eyebrow">Pacific Centre for Isotopic and Geochemical Research</p>
+      <h1 class="masthead__title">Fee estimator</h1>
+      <p class="masthead__sub">
+        Build an indicative cost for analytical work at PCIGR. Choose your rate category, enter
+        sample or instrument-hour counts, and the estimate assembles on the right.
+      </p>
+      <div class="instrument-bar" aria-hidden="true">
+        <span>HR-SF-ICP-MS</span><span>Q-ICP-MS</span><span>MC-ICP-MS</span>
+        <span>TIMS</span><span>IRMS</span><span>LA-ICP-MS</span>
+      </div>
+    </div>
+    <button type="button" class="theme-toggle no-print" id="theme-toggle">Switch theme</button>
+  </div>
+</header>
+
+<div class="shell">
+  <div class="layout">
+
+    <!-- ==================== Left: configuration ==================== -->
+    <main>
+      <section class="setup" aria-labelledby="setup-heading">
+        <h2 id="setup-heading" class="eyebrow">Step one — who is paying</h2>
+
+        <div>
+          <span class="field__label eyebrow" id="tier-label">Rate category</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="tier-label" id="tier-group"></div>
+          <p class="field__hint">
+            Rate columns apply to Canadian-based researchers. Non-Canadian institutions and
+            non-profit organisations should contact
+            <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a> for a quotation.
+          </p>
+        </div>
+
+        <div class="filters">
+          <div>
+            <span class="field__label eyebrow" id="material-label">Narrow by material</span>
+            <div class="chips" role="group" aria-labelledby="material-label" id="material-chips"></div>
+          </div>
+
+          <div>
+            <span class="field__label eyebrow" id="instrument-label">Narrow by instrument</span>
+            <div class="chips" role="group" aria-labelledby="instrument-label" id="instrument-chips"></div>
+          </div>
+
+          <p class="field__hint">
+            Both filters are optional and apply together — choosing <em>zircon</em> and
+            <em>LA-ICP-MS</em> shows only laser ablation work on zircon. Nothing is priced
+            differently; this only shortens the list. Anything you have already entered a
+            quantity for stays visible.
+          </p>
+        </div>
+
+        <div>
+          <label class="field__label eyebrow" for="reference">Project or client reference <span style="text-transform:none;letter-spacing:0;font-weight:400;">(appears on the printed quote)</span></label>
+          <input class="text-input" type="text" id="reference" placeholder="e.g. Smith — Cordilleran detrital zircon suite" autocomplete="off">
+        </div>
+      </section>
+
+      <section class="catalogue" aria-labelledby="catalogue-heading">
+        <h2 id="catalogue-heading" class="eyebrow" style="margin-bottom:var(--s4);">Step two — select services</h2>
+        <div id="catalogue"></div>
+        <p class="callout" id="no-matches" hidden>
+          No services match that combination of material and instrument. Widen either filter —
+          <strong>All materials</strong> or <strong>All instruments</strong> — to see more.
+        </p>
+      </section>
+    </main>
+
+    <!-- ==================== Right: live estimate ==================== -->
+    <aside class="estimate" aria-labelledby="estimate-heading">
+      <div class="estimate__head">
+        <p class="eyebrow">Indicative estimate</p>
+        <h2 class="estimate__title" id="estimate-heading">Cost summary</h2>
+        <p class="estimate__tier" id="estimate-tier"></p>
+        <p class="estimate__tier print-only" id="print-reference"></p>
+        <p class="estimate__tier print-only" id="print-date"></p>
+      </div>
+
+      <div class="lines" id="lines"></div>
+      <p class="lines--empty" id="lines-empty">No services selected yet.</p>
+
+      <div class="totals" id="totals"></div>
+
+      <div class="surcharges no-print">
+        <label class="check">
+          <input type="checkbox" id="rush">
+          <span>Rush request <small>Adds 40% to the analytical subtotal.</small></span>
+        </label>
+        <label class="check">
+          <input type="checkbox" id="card">
+          <span>Paying by credit card <small>Adds 3%. Card payments are capped at $10,000 CAD.</small></span>
+        </label>
+      </div>
+
+      <p class="callout callout--info" id="combined-notice" hidden></p>
+
+      <p class="callout" id="card-warning" hidden>
+        This estimate exceeds the $10,000 CAD credit-card ceiling — arrange payment by
+        invoice or internal transfer.
+      </p>
+
+      <div class="actions no-print">
+        <button type="button" class="btn btn--primary" id="print">Save as PDF</button>
+        <button type="button" class="btn" id="copy">Copy summary</button>
+        <button type="button" class="btn" id="reset">Reset</button>
+      </div>
+
+      <div class="disclaimer">
+        <p><strong>This is an estimate, not a quotation.</strong> Prices are subject to change
+        without notice; confirm all costs with PCIGR before committing funds.</p>
+        <p>All amounts in Canadian dollars, exclusive of applicable local and federal taxes.</p>
+        <p>Instrument setup allowances of 1.5 h (solution) and 2 h (laser) are standard per
+        24-hour interval; additional time is charged at gas rates.</p>
+      </div>
+    </aside>
+
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ============================================================================
+   RATE SCHEDULE — single source of truth.
+   Rates are ordered [NSERC/Canadian academic, Canadian government, Others/industry].
+   Transcribed from https://pcigr.ubc.ca/fees — verify against the live page
+   before publishing, and update `SCHEDULE_REVISED` whenever these change.
+   ============================================================================ */
+
+const SCHEDULE_REVISED = "6 August 2026";
+
+const TIERS = [
+  { id: "academic",   name: "NSERC / Canadian academic", short: "NSERC / Canadian academic rate" },
+  { id: "government", name: "Canadian government",       short: "Canadian government rate" },
+  { id: "industry",   name: "Others (industry)",         short: "Industry rate" }
+];
+
+const MATERIALS = [
+  { id: "all",       name: "All materials" },
+  { id: "rock",      name: "Whole rock" },
+  { id: "zircon",    name: "Zircon" },
+  { id: "carbonate", name: "Carbonate" },
+  { id: "organic",   name: "Organic, soil & sediment" },
+  { id: "water",     name: "Water & solutions" },
+  { id: "sulfide",  name: "Sulfide & galena" },
+  { id: "garnet",    name: "Garnet & apatite" }
+];
+
+const INSTRUMENTS = [
+  { id: "all",   name: "All instruments" },
+  { id: "hrsf",  name: "HR-SF-ICP-MS" },
+  { id: "quad",  name: "Q-ICP-MS" },
+  { id: "la",    name: "LA-ICP-MS" },
+  { id: "mc",    name: "MC-ICP-MS" },
+  { id: "tims",  name: "TIMS" },
+  { id: "irms",  name: "IRMS" },
+  { id: "prep",  name: "Preparation lab" }
+];
+
+const CATALOGUE = [
+  {
+    name: "Technician time",
+    meta: "Labour",
+    note: "Setup and tuning fill in automatically from the ICP-MS hours you book: 1.5 h (solution) or 2 h (laser) per 24-hour interval of instrument time, at the technician rate. Type into either field to override the automatic figure — your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
+    items: [
+      { id: "tech-sol",   name: "Instrument setup and tuning — solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet"], instruments: ["hrsf","quad"] },
+      { id: "tech-laser", name: "Instrument setup and tuning — laser",    unit: "hour", rates: [120, 180, 240], tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"] }
+    ]
+  },
+  {
+    name: "Elemental concentration",
+    meta: "HR-SF-ICP-MS · Q-ICP-MS",
+    note: "PCIGR reserves the right to add a fee for rock samples needing extensive extra work in preparation and analysis. Organic materials and waters may be charged per hour for both preparation and analysis rather than per sample.",
+    items: [
+      { id: "elem-hr", name: "Element 2 / AttoM HR-SF-ICP-MS", unit: "hour", rates: [75, 115, 150],
+        tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet"], instruments: ["hrsf"],
+        caution: true,
+        note: "Special sample introduction systems such as Aridus carry additional charges — contact PCIGR for availability." },
+
+      { id: "elem-quad", name: "Agilent 7700x / 8900 quadrupole ICP-MS", unit: "hour", rates: [65, 100, 130],
+        tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["quad"],
+        caution: true,
+        note: "Special sample introduction systems such as Aridus carry additional charges — contact PCIGR for availability." },
+
+      { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
+        tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["hrsf","quad"],
+        caution: true,
+        note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion — add that separately under Sample preparation if required." },
+
+      { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
+        tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"],
+        note: "Contact PCIGR for a daily rate, or for a per-spot rate for quoting." }
+    ]
+  },
+  {
+    name: "Light stable isotopes",
+    meta: "IRMS",
+    note: "Waters, H/D materials and artificially enriched isotope samples cannot be analysed. Samples that shorten EA column life — those with salt content or acid residue — attract an added cost on top of the analysis fee. Contact Dr. Kendra Chritz (kendra.chritz@ubc.ca) about high-volume projects or organic soils.",
+    items: [
+      { id: "irms-cn",    name: "δ¹⁵N, δ¹³C — solid samples",       unit: "sample", rates: [16, 25, 50],       tags: ["rock","organic","carbonate"], instruments: ["irms"] },
+      { id: "irms-carb",  name: "δ¹³C, δ¹⁸O — carbonates",          unit: "sample", rates: [18, 27, 52],       tags: ["carbonate"], instruments: ["irms"] },
+      { id: "irms-self",  name: "Sample preparation — self-serve",  unit: "sample", rates: [4.85, 4.85, 5.50], tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] },
+      { id: "irms-tech",  name: "Sample preparation — technician",  unit: "hour",   rates: [26, 26, 52],       tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] }
+    ]
+  },
+  {
+    name: "Radiogenic isotopes",
+    meta: "TIMS",
+    note: "Extra fees apply for mineral separation where needed — add it under Sample preparation. Contact PCIGR for pricing on combined isotopic analyses from the same dissolution, which is cheaper than ordering them separately.",
+    items: [
+      { id: "tims-sr",      name: "Sr isotopic analysis",              unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate"], instruments: ["tims"] },
+      { id: "tims-nd",      name: "Nd isotopic analysis",              unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["tims"] },
+      { id: "tims-pb-gal",  name: "Pb isotopes — galena",              unit: "sample", rates: [100, 150, 200], tags: ["sulfide"], instruments: ["tims"] },
+      { id: "tims-pb-fsp",  name: "Pb isotopes — feldspar / sulfide", unit: "sample", rates: [200, 300, 400], tags: ["rock","sulfide"], instruments: ["tims"] }
+    ]
+  },
+  {
+    name: "Radiogenic isotopes",
+    meta: "MC-ICP-MS",
+    note: "Contact PCIGR for pricing on combined isotopic analyses from the same dissolution.",
+    items: [
+      { id: "mc-nd",      name: "Nd isotopic analysis",                    unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["mc"] },
+      { id: "mc-hf",      name: "Hf isotopic analysis",                    unit: "sample", rates: [310, 465, 620], tags: ["rock","zircon"], instruments: ["mc"] },
+      { id: "mc-hf-conc", name: "Hf isotopic analysis + Lu-Hf concentration", unit: "sample", rates: [350, 525, 700], tags: ["rock","zircon","garnet"], instruments: ["mc"] },
+      { id: "mc-hf-zrn",  name: "Zircon Hf isotopic analysis",             unit: "sample", rates: [210, 315, 420], tags: ["zircon"], instruments: ["mc","la"] },
+      { id: "mc-pb",      name: "Pb isotopic analysis",                    unit: "sample", rates: [200, 300, 400], tags: ["rock","sulfide","water"], instruments: ["mc"] }
+    ]
+  },
+  {
+    name: "U-Pb geochronology",
+    meta: "CA-TIMS · LA-ICP-MS",
+    note: "Contact pcigr-upb-geochron@pcigr.ubc.ca for pricing on any combination of laser ablation and ID-TIMS geochronology.",
+    items: [
+      { id: "upb-prep", name: "Sample preparation", unit: "sample", rates: [350, 525, 700],
+        tags: ["rock","zircon"], instruments: ["prep"],
+        caution: true,
+        note: "Charged even if no zircon is recovered." },
+
+      { id: "upb-catims", name: "U-Pb CA-TIMS", unit: "sample", rates: [2100, 3150, 4200],
+        tags: ["zircon","rock"], instruments: ["tims"],
+        caution: true,
+        note: "A typical per-sample cost already includes mineral separation, 40 LA-ICP-MS spots to select grains for chemical abrasion, and 5 CA-TIMS fractions — do not add those separately. Additional grains or fractions from the same separate are charged extra. Turnaround is 6–8 months for five samples or fewer, or 3–4 months with rush status; contact PCIGR for turnaround on larger submissions." },
+
+      { id: "upb-la-det", name: "U-Pb laser ablation — detrital", unit: "sample", rates: [1200, 1800, 2400],
+        tags: ["zircon","rock"], instruments: ["la"],
+        note: "Minimum 60 grains per sample." },
+
+      { id: "upb-la-ign", name: "U-Pb laser ablation — igneous", unit: "sample", rates: [1000, 1500, 2000],
+        tags: ["zircon","rock"], instruments: ["la"],
+        note: "Minimum 16 analyses per sample." }
+    ]
+  },
+  {
+    name: "Lu-Hf geochronology",
+    meta: "ID-MC-ICP-MS",
+    items: [
+      { id: "luhf-grt", name: "Garnet, apatite — ID-MC-ICP-MS", unit: "sample", rates: [2250, 3400, 4500],
+        tags: ["garnet","rock"], instruments: ["mc"],
+        note: "Contact Prof. Matthijs Smit with questions about Lu-Hf geochronology." }
+    ]
+  },
+  {
+    name: "Sample preparation",
+    meta: "Wet chemistry & mineral separation",
+    note: "Available only for samples subsequently analysed at PCIGR.",
+    items: [
+      { id: "prep-crush",   name: "Rock crushing",                              unit: "sample", rates: [180, 270, 360], tags: ["rock","zircon","sulfide","garnet"], instruments: ["prep"] },
+      { id: "prep-leach",   name: "Leaching for radiogenic isotope analysis",   unit: "sample", rates: [105, 160, 220], tags: ["rock","carbonate","sulfide"], instruments: ["prep"] },
+      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock","zircon","garnet"], instruments: ["prep"] },
+      { id: "prep-micro",   name: "Microwave dissolution",                      unit: "sample", rates: [30, 45, 60],    tags: ["rock","carbonate","organic","sulfide"], instruments: ["prep"] },
+      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["rock","zircon","garnet"], instruments: ["prep"] }
+    ]
+  }
+];
+
+const RUSH_RATE = 0.40;
+const CARD_RATE = 0.03;
+const CARD_CEILING = 10000;
+
+/* ----------------------------------------------------------------------------
+   Automatic setup allowance.
+
+   1.5 h (solution) and 2 h (laser) of setup and tuning are standard per 24-hour
+   interval of instrument time, charged at the technician labour rate. Setup
+   beyond that allowance is charged at the instrument's own hourly (gas) rate —
+   which is simply the instrument-time rate the operator already books, so no
+   separate line is generated for it.
+
+   The allowance fills the matching technician-time field only while that field
+   is empty. As soon as an operator types a value there, theirs wins and the
+   automatic figure is withdrawn, so a manually entered setup is never doubled.
+   ---------------------------------------------------------------------------- */
+
+/* ----------------------------------------------------------------------------
+   Combined-analysis pricing.
+
+   PCIGR quotes analyses sharing a single dissolution below the sum of their
+   individual prices, but does not publish those figures — the fees page says
+   to contact the centre. Rather than infer a discount policy, this is a plain
+   lookup table: add a row per package PCIGR actually offers, with its agreed
+   rates as [NSERC/academic, Canadian government, industry].
+
+   A row with `rates: null` is treated as "price on application" — the
+   estimator prices the analyses individually and flags that a combined
+   quotation is available. Fill in the rates and it applies them automatically
+   in place of the individual lines, for as many samples as carry the whole set.
+   ---------------------------------------------------------------------------- */
+
+const COMBINATIONS = [
+  // { id: "sr-nd", name: "Sr + Nd (same dissolution)", members: ["tims-sr", "tims-nd"], rates: [400, 600, 800] },
+];
+
+/** Per-sample analyses that can share one dissolution, so may be quoted together. */
+const SAME_DISSOLUTION = [
+  "tims-sr", "tims-nd", "tims-pb-gal", "tims-pb-fsp",
+  "mc-nd", "mc-hf", "mc-hf-conc", "mc-pb"
+];
+
+const INTERVAL_HOURS = 24;
+
+const SETUP_RULES = {
+  solution: { allowance: 1.5, techItemId: "tech-sol",   drivers: ["elem-hr", "elem-quad"] },
+  laser:    { allowance: 2.0, techItemId: "tech-laser", drivers: ["elem-laser"] }
+};
+
+/* ============================================================================
+   State
+   ============================================================================ */
+
+const state = {
+  tier: 0,
+  material: "all",
+  instrument: "all",
+  quantities: Object.create(null),
+  rush: false,
+  card: false
+};
+
+const ITEMS_BY_ID = new Map();
+CATALOGUE.forEach(cat => cat.items.forEach(item => ITEMS_BY_ID.set(item.id, { item, category: cat })));
+
+const money = new Intl.NumberFormat("en-CA", {
+  style: "currency", currency: "CAD", minimumFractionDigits: 2, maximumFractionDigits: 2
+});
+
+const $ = id => document.getElementById(id);
+
+/* ============================================================================
+   Build the interface
+   ============================================================================ */
+
+function buildTiers() {
+  const group = $("tier-group");
+  TIERS.forEach((tier, index) => {
+    const input = document.createElement("input");
+    input.type = "radio";
+    input.name = "tier";
+    input.id = `tier-${tier.id}`;
+    input.value = String(index);
+    input.checked = index === state.tier;
+    input.addEventListener("change", () => {
+      state.tier = index;
+      render();
+    });
+
+    const label = document.createElement("label");
+    label.setAttribute("for", input.id);
+    label.textContent = tier.name;
+
+    group.append(input, label);
+  });
+}
+
+function buildChipGroup(containerId, options, stateKey) {
+  const wrap = $(containerId);
+  options.forEach(option => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.textContent = option.name;
+    chip.dataset.value = option.id;
+    chip.dataset.stateKey = stateKey;
+    chip.setAttribute("aria-pressed", String(option.id === state[stateKey]));
+    chip.addEventListener("click", () => {
+      state[stateKey] = option.id;
+      wrap.querySelectorAll(".chip").forEach((other, i) => {
+        other.setAttribute("aria-pressed", String(options[i].id === state[stateKey]));
+      });
+      applyFilter();
+    });
+    wrap.append(chip);
+  });
+}
+
+function buildCatalogue() {
+  const root = $("catalogue");
+
+  CATALOGUE.forEach((category, catIndex) => {
+    const section = document.createElement("section");
+    section.className = "category";
+    section.dataset.catIndex = String(catIndex);
+
+    const head = document.createElement("div");
+    head.className = "category__head";
+
+    const name = document.createElement("h3");
+    name.className = "category__name";
+    name.textContent = category.name;
+
+    const meta = document.createElement("span");
+    meta.className = "category__meta";
+    meta.textContent = category.meta;
+
+    head.append(name, meta);
+    section.append(head);
+
+    category.items.forEach(item => {
+      const row = document.createElement("div");
+      row.className = "item";
+      row.dataset.itemId = item.id;
+      row.dataset.tags = item.tags.join(" ");
+      row.dataset.instruments = item.instruments.join(" ");
+      row.dataset.unit = item.unit;
+
+      const nameCell = document.createElement("div");
+      nameCell.className = "item__name";
+
+      const label = document.createElement("label");
+      label.className = "item__label";
+      label.setAttribute("for", `qty-${item.id}`);
+      label.textContent = item.name;
+      nameCell.append(label);
+
+      if (item.note) {
+        const note = document.createElement("small");
+        note.className = item.caution ? "item__note item__note--caution" : "item__note";
+        if (item.caution) note.append(Object.assign(document.createElement("span"), {
+          className: "item__flag", textContent: "extra fees may apply"
+        }), " ");
+        note.append(item.note);
+        nameCell.append(note);
+      }
+
+      if (setupModeFor(item.id)) {
+        const derivation = document.createElement("small");
+        derivation.className = "item__derivation";
+        derivation.dataset.role = "derivation";
+        derivation.hidden = true;
+        nameCell.append(derivation);
+      }
+
+      const rateCell = document.createElement("div");
+      rateCell.className = "item__rate num";
+      rateCell.dataset.role = "rate";
+
+      const qty = document.createElement("input");
+      qty.className = "item__qty";
+      qty.type = "number";
+      qty.id = `qty-${item.id}`;
+      qty.min = "0";
+      qty.step = item.unit === "hour" ? "0.5" : "1";
+      qty.value = "";
+      qty.placeholder = "0";
+      qty.setAttribute("aria-label", `${item.name} — number of ${item.unit === "hour" ? "hours" : "samples"}`);
+      qty.addEventListener("input", () => {
+        const value = Math.max(0, Number(qty.value) || 0);
+        if (value > 0) {
+          state.quantities[item.id] = value;
+        } else {
+          delete state.quantities[item.id];
+        }
+        render();
+      });
+
+      const totalCell = document.createElement("div");
+      totalCell.className = "item__total";
+      totalCell.dataset.role = "line-total";
+
+      row.append(nameCell, rateCell, qty, totalCell);
+      section.append(row);
+    });
+
+    if (category.note) {
+      const note = document.createElement("p");
+      note.className = "category__note";
+      note.textContent = category.note;
+      section.append(note);
+    }
+
+    root.append(section);
+  });
+}
+
+/* ============================================================================
+   Filtering
+   ============================================================================ */
+
+function syncChips() {
+  document.querySelectorAll(".chip").forEach(chip => {
+    chip.setAttribute("aria-pressed", String(chip.dataset.value === state[chip.dataset.stateKey]));
+  });
+}
+
+function matchesFilters(row) {
+  const materials = row.dataset.tags.split(" ");
+  const instruments = row.dataset.instruments.split(" ");
+  return (state.material === "all" || materials.includes(state.material))
+      && (state.instrument === "all" || instruments.includes(state.instrument));
+}
+
+function applyFilter() {
+  const rows = Array.from(document.querySelectorAll(".item"));
+  const visibility = new Map();
+  const coveredInstruments = new Set();
+
+  // Pass one — the analyses themselves. Anything being charged stays on screen
+  // regardless of the filters, so nothing is billed while hidden.
+  //
+  // Only hourly work counts towards instrument coverage: a per-sample price
+  // already includes its own setup and tuning, so it must not summon a
+  // separate labour row.
+  rows.forEach(row => {
+    const id = row.dataset.itemId;
+    if (setupModeFor(id)) return;
+
+    const visible = matchesFilters(row) || effectiveQuantity(id).quantity > 0;
+    visibility.set(id, visible);
+    if (visible && row.dataset.unit === "hour") {
+      row.dataset.instruments.split(" ").forEach(i => coveredInstruments.add(i));
+    }
+  });
+
+  // Pass two — setup and tuning is support, not an analysis. It appears only
+  // when hourly instrument time it supports is on screen, so neither
+  // Zircon + Q-ICP-MS (no such analysis) nor a purely per-sample instrument
+  // such as MC-ICP-MS offers setup that cannot be ordered or is already paid for.
+  rows.forEach(row => {
+    const id = row.dataset.itemId;
+    if (!setupModeFor(id)) return;
+
+    const supportsSomethingVisible = row.dataset.instruments
+      .split(" ")
+      .some(instrument => coveredInstruments.has(instrument));
+
+    visibility.set(id, (matchesFilters(row) && supportsSomethingVisible)
+      || effectiveQuantity(id).quantity > 0);
+  });
+
+  let anyVisible = false;
+
+  document.querySelectorAll(".category").forEach(section => {
+    let visibleInCategory = 0;
+
+    section.querySelectorAll(".item").forEach(row => {
+      const visible = Boolean(visibility.get(row.dataset.itemId));
+      row.hidden = !visible;
+      if (visible) visibleInCategory += 1;
+    });
+
+    section.hidden = visibleInCategory === 0;
+    if (visibleInCategory > 0) anyVisible = true;
+  });
+
+  $("no-matches").hidden = anyVisible;
+}
+
+/* ============================================================================
+   Calculation
+   ============================================================================ */
+
+/** Which setup mode, if any, a technician-time item represents. */
+function setupModeFor(itemId) {
+  return Object.keys(SETUP_RULES).find(mode => SETUP_RULES[mode].techItemId === itemId) || null;
+}
+
+/**
+ * Setup hours implied by the instrument time currently booked in a given mode.
+ * Each driving instrument accrues its own 24-hour intervals — running two
+ * separate instruments means two separate setups.
+ */
+function derivedSetup(mode) {
+  const rule = SETUP_RULES[mode];
+  const parts = [];
+  let intervals = 0;
+
+  rule.drivers.forEach(driverId => {
+    const hours = state.quantities[driverId] || 0;
+    if (hours <= 0) return;
+    const driverIntervals = Math.ceil(hours / INTERVAL_HOURS);
+    intervals += driverIntervals;
+    parts.push({ name: ITEMS_BY_ID.get(driverId).item.name, hours, intervals: driverIntervals });
+  });
+
+  return {
+    mode,
+    intervals,
+    parts,
+    allowance: rule.allowance,
+    hours: Math.round(intervals * rule.allowance * 100) / 100
+  };
+}
+
+/**
+ * The quantity actually charged for an item: whatever was typed, or — for the
+ * two technician setup rows only, and only while they are empty — the figure
+ * derived from booked instrument time.
+ */
+function effectiveQuantity(itemId) {
+  const manual = state.quantities[itemId] || 0;
+  if (manual > 0) return { quantity: manual, auto: false, derivation: null };
+
+  const mode = setupModeFor(itemId);
+  if (!mode) return { quantity: 0, auto: false, derivation: null };
+
+  const derivation = derivedSetup(mode);
+  return { quantity: derivation.hours, auto: derivation.hours > 0, derivation };
+}
+
+function describeDerivation(derivation) {
+  if (!derivation || derivation.intervals === 0) return "";
+  const spans = derivation.parts
+    .map(part => `${formatHours(part.hours)} h on ${part.name} = ${part.intervals} × 24 h`)
+    .join("; ");
+  return `Automatic — ${spans}, at ${formatHours(derivation.allowance)} h setup per interval`;
+}
+
+function formatHours(value) {
+  return Number.isInteger(value) ? String(value) : String(Number(value.toFixed(2)));
+}
+
+/**
+ * Consume booked analyses into any priced package that covers them, most
+ * comprehensive package first. Returns the packaged lines and mutates
+ * `remaining` so the leftovers can be billed individually.
+ */
+function applyCombinations(remaining) {
+  const packaged = [];
+  const priced = COMBINATIONS.filter(c => Array.isArray(c.rates));
+
+  // Bounded: every pass zeroes at least one member, so it cannot spin.
+  for (let pass = 0; pass < COMBINATIONS.length * 8; pass += 1) {
+    const best = priced
+      .filter(c => c.members.every(id => (remaining[id] || 0) > 0))
+      .sort((a, b) => b.members.length - a.members.length
+                   || a.rates[state.tier] - b.rates[state.tier])[0];
+    if (!best) break;
+
+    const count = Math.min(...best.members.map(id => remaining[id]));
+    best.members.forEach(id => { remaining[id] -= count; });
+
+    const rate = best.rates[state.tier];
+    packaged.push({
+      name: best.name,
+      category: "Combined analysis",
+      quantity: count,
+      unit: "sample",
+      rate,
+      combined: true,
+      members: best.members.map(id => ITEMS_BY_ID.get(id).item.name),
+      total: rate * count
+    });
+  }
+
+  return packaged;
+}
+
+function computeEstimate() {
+  const lines = [];
+
+  // Quantities are resolved once, then drawn down by any package that applies.
+  const remaining = Object.create(null);
+  CATALOGUE.forEach(category => category.items.forEach(item => {
+    remaining[item.id] = effectiveQuantity(item.id).quantity;
+  }));
+
+  lines.push(...applyCombinations(remaining));
+
+  CATALOGUE.forEach(category => {
+    category.items.forEach(item => {
+      const quantity = remaining[item.id];
+      if (!quantity) return;
+      const { auto, derivation } = effectiveQuantity(item.id);
+      const rate = item.rates[state.tier];
+      lines.push({
+        name: item.name,
+        category: category.name,
+        quantity,
+        unit: item.unit,
+        rate,
+        auto,
+        derivation,
+        total: rate * quantity
+      });
+    });
+  });
+
+  // Anything left that could share a dissolution is worth a quotation, but the
+  // figure is PCIGR's to give — never this tool's to invent.
+  const combinable = SAME_DISSOLUTION.filter(id => (remaining[id] || 0) > 0)
+    .map(id => ITEMS_BY_ID.get(id).item.name);
+
+  const subtotal = lines.reduce((sum, line) => sum + line.total, 0);
+  const rush = state.rush ? subtotal * RUSH_RATE : 0;
+  const beforeCard = subtotal + rush;
+  const card = state.card ? beforeCard * CARD_RATE : 0;
+
+  return { lines, subtotal, rush, card, total: beforeCard + card, combinable };
+}
+
+/* ============================================================================
+   Rendering
+   ============================================================================ */
+
+function renderRates() {
+  document.querySelectorAll(".item").forEach(row => {
+    const { item } = ITEMS_BY_ID.get(row.dataset.itemId);
+    const rate = item.rates[state.tier];
+    const { quantity, auto, derivation } = effectiveQuantity(item.id);
+
+    const rateCell = row.querySelector('[data-role="rate"]');
+    rateCell.replaceChildren(
+      document.createTextNode(money.format(rate)),
+      Object.assign(document.createElement("span"), {
+        className: "item__unit",
+        textContent: item.unit === "hour" ? " / h" : " / sample"
+      })
+    );
+
+    row.querySelector('[data-role="line-total"]').textContent =
+      quantity > 0 ? money.format(rate * quantity) : "—";
+
+    row.classList.toggle("item--active", quantity > 0);
+    row.classList.toggle("item--auto", auto);
+
+    // The two setup rows show their derived figure as a placeholder, so it is
+    // plainly an automatic default that typing will replace rather than add to.
+    const input = row.querySelector(".item__qty");
+    if (setupModeFor(item.id)) {
+      input.placeholder = auto ? formatHours(quantity) : "0";
+      input.title = auto
+        ? "Filled automatically from booked instrument time — type to override."
+        : "";
+    }
+
+    const derivationEl = row.querySelector('[data-role="derivation"]');
+    if (derivationEl) {
+      derivationEl.textContent = auto ? describeDerivation(derivation) : "";
+      derivationEl.hidden = !auto;
+    }
+  });
+}
+
+function renderEstimate(estimate) {
+  const linesEl = $("lines");
+  const emptyEl = $("lines-empty");
+
+  linesEl.replaceChildren();
+  emptyEl.hidden = estimate.lines.length > 0;
+
+  estimate.lines.forEach(line => {
+    const row = document.createElement("div");
+    row.className = "line";
+
+    const name = document.createElement("div");
+    name.className = "line__name";
+    name.textContent = line.name;
+
+    if (line.auto || line.combined) {
+      const badge = document.createElement("span");
+      badge.className = "line__badge";
+      badge.textContent = line.combined ? "combined" : "auto";
+      name.append(" ", badge);
+    }
+
+    const detail = document.createElement("small");
+    detail.className = "line__detail";
+    const unitWord = line.unit === "hour"
+      ? (line.quantity === 1 ? "hour" : "hours")
+      : (line.quantity === 1 ? "sample" : "samples");
+    detail.textContent = `${formatHours(line.quantity)} ${unitWord} × ${money.format(line.rate)}`;
+    name.append(detail);
+
+    if (line.auto) {
+      const why = document.createElement("small");
+      why.className = "line__detail";
+      why.textContent = `${line.derivation.intervals} × 24 h interval${line.derivation.intervals === 1 ? "" : "s"} × ${formatHours(line.derivation.allowance)} h`;
+      name.append(why);
+    }
+
+    if (line.combined) {
+      const covers = document.createElement("small");
+      covers.className = "line__detail";
+      covers.textContent = `replaces ${line.members.join(", ")}`;
+      name.append(covers);
+    }
+
+    const leader = document.createElement("span");
+    leader.className = "line__leader";
+    leader.setAttribute("aria-hidden", "true");
+
+    const value = document.createElement("div");
+    value.className = "line__value";
+    value.textContent = money.format(line.total);
+
+    row.append(name, leader, value);
+    linesEl.append(row);
+  });
+
+  const totals = $("totals");
+  totals.replaceChildren();
+
+  const addRow = (label, value, modifier) => {
+    const row = document.createElement("div");
+    row.className = `total-row${modifier ? ` total-row--${modifier}` : ""}`;
+    const labelEl = document.createElement("span");
+    labelEl.textContent = label;
+    const valueEl = document.createElement("span");
+    valueEl.className = "total-row__value num";
+    valueEl.textContent = value;
+    row.append(labelEl, valueEl);
+    totals.append(row);
+    return row;
+  };
+
+  addRow("Subtotal", money.format(estimate.subtotal), "sub");
+  if (estimate.rush > 0) addRow("Rush surcharge (40%)", money.format(estimate.rush), "surcharge");
+  if (estimate.card > 0) addRow("Credit card surcharge (3%)", money.format(estimate.card), "surcharge");
+  addRow("Estimated total", money.format(estimate.total), "grand");
+
+  $("card-warning").hidden = !(state.card && estimate.total > CARD_CEILING);
+
+  const combined = $("combined-notice");
+  combined.hidden = estimate.combinable.length < 2;
+  if (!combined.hidden) {
+    combined.textContent = `${estimate.combinable.join(", ")} are priced separately above. `
+      + "If these run from the same dissolution, PCIGR can quote them together for less — "
+      + "contact pcigr@eoas.ubc.ca before treating this figure as final.";
+  }
+}
+
+function renderHeader() {
+  $("estimate-tier").textContent = TIERS[state.tier].short + " · excludes taxes";
+
+  const reference = $("reference").value.trim();
+  const referenceEl = $("print-reference");
+  referenceEl.textContent = reference ? `Reference: ${reference}` : "";
+
+  $("print-date").textContent =
+    `Prepared ${new Date().toLocaleDateString("en-CA", { year: "numeric", month: "long", day: "numeric" })}` +
+    ` · schedule revised ${SCHEDULE_REVISED}`;
+}
+
+let lastTotal = 0;
+
+function render() {
+  const estimate = computeEstimate();
+  renderRates();
+  renderEstimate(estimate);
+  renderHeader();
+  applyFilter();
+
+  if (estimate.total !== lastTotal) {
+    const grand = document.querySelector(".total-row--grand");
+    if (grand) {
+      grand.classList.remove("flash");
+      void grand.offsetWidth;
+      grand.classList.add("flash");
+    }
+    lastTotal = estimate.total;
+  }
+}
+
+/* ============================================================================
+   Plain-text summary — pasteable into email
+   ============================================================================ */
+
+function buildSummary() {
+  const estimate = computeEstimate();
+  const reference = $("reference").value.trim();
+  const lines = [];
+
+  lines.push("PCIGR — indicative fee estimate");
+  if (reference) lines.push(`Reference: ${reference}`);
+  lines.push(`Rate category: ${TIERS[state.tier].name}`);
+  lines.push(`Prepared: ${new Date().toLocaleDateString("en-CA")}`);
+  lines.push("");
+
+  if (estimate.lines.length === 0) {
+    lines.push("No services selected.");
+  } else {
+    estimate.lines.forEach(line => {
+      const unitWord = line.unit === "hour" ? "h" : "sample(s)";
+      const flag = line.auto
+        ? ` [standard setup allowance: ${line.derivation.intervals} x 24 h interval(s) x ${formatHours(line.derivation.allowance)} h]`
+        : line.combined
+          ? ` [combined package, replaces: ${line.members.join(", ")}]`
+          : "";
+      lines.push(`${line.name} — ${formatHours(line.quantity)} ${unitWord} x ${money.format(line.rate)} = ${money.format(line.total)}${flag}`);
+    });
+    lines.push("");
+    lines.push(`Subtotal: ${money.format(estimate.subtotal)}`);
+    if (estimate.rush > 0) lines.push(`Rush surcharge (40%): ${money.format(estimate.rush)}`);
+    if (estimate.card > 0) lines.push(`Credit card surcharge (3%): ${money.format(estimate.card)}`);
+    lines.push(`Estimated total: ${money.format(estimate.total)}`);
+
+    if (estimate.combinable.length >= 2) {
+      lines.push("");
+      lines.push(`NOTE: ${estimate.combinable.join(", ")} are priced separately here. If they`);
+      lines.push("run from the same dissolution, combined pricing is available on request.");
+    }
+  }
+
+  lines.push("");
+  lines.push("Estimate only, exclusive of applicable taxes. Prices subject to change without notice.");
+  lines.push("Confirm all costs with pcigr@eoas.ubc.ca before committing funds.");
+
+  return lines.join("\n");
+}
+
+/* ============================================================================
+   Wiring
+   ============================================================================ */
+
+function init() {
+  buildTiers();
+  buildChipGroup("material-chips", MATERIALS, "material");
+  buildChipGroup("instrument-chips", INSTRUMENTS, "instrument");
+  buildCatalogue();
+
+  $("rush").addEventListener("change", event => { state.rush = event.target.checked; render(); });
+  $("card").addEventListener("change", event => { state.card = event.target.checked; render(); });
+  $("reference").addEventListener("input", renderHeader);
+
+  $("print").addEventListener("click", () => window.print());
+
+  $("copy").addEventListener("click", async event => {
+    const button = event.currentTarget;
+    const original = button.textContent;
+    try {
+      await navigator.clipboard.writeText(buildSummary());
+      button.textContent = "Copied";
+    } catch {
+      button.textContent = "Copy blocked — select the estimate instead";
+    }
+    setTimeout(() => { button.textContent = original; }, 2200);
+  });
+
+  $("reset").addEventListener("click", () => {
+    state.quantities = Object.create(null);
+    state.rush = false;
+    state.card = false;
+    state.material = "all";
+    state.instrument = "all";
+    document.querySelectorAll(".item__qty").forEach(input => { input.value = ""; });
+    $("rush").checked = false;
+    $("card").checked = false;
+    $("reference").value = "";
+    syncChips();
+    render();
+  });
+
+  $("theme-toggle").addEventListener("click", () => {
+    const root = document.documentElement;
+    const currentlyDark = root.dataset.theme
+      ? root.dataset.theme === "dark"
+      : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    root.dataset.theme = currentlyDark ? "light" : "dark";
+  });
+
+  render();
+}
+
+init();
+</script>
+
+</body>
+</html>
