@@ -224,9 +224,11 @@ p { margin: 0; }
   max-width: var(--measure);
 }
 
+/* Two by two rather than four across: the labels are long, and the left column
+   is only ever about 700px wide even on a large screen. */
 .segmented {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   border: 1px solid var(--rule-strong);
 }
 
@@ -243,9 +245,11 @@ p { margin: 0; }
   cursor: pointer;
   background: var(--surface);
   border-right: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
   transition: background 120ms ease, color 120ms ease;
 }
-.segmented label:last-of-type { border-right: 0; }
+.segmented label:nth-of-type(2n) { border-right: 0; }
+.segmented label:nth-last-of-type(-n+2) { border-bottom: 0; }
 
 @media (max-width: 560px) {
   .segmented label { border-right: 0; border-bottom: 1px solid var(--rule); text-align: left; }
@@ -289,6 +293,127 @@ p { margin: 0; }
 }
 
 /* ============================================================
+   Guided steps
+   ============================================================ */
+.step {
+  padding-bottom: var(--s5);
+  border-bottom: 1px solid var(--rule);
+  margin-bottom: var(--s5);
+}
+.step:last-child { border-bottom: 0; margin-bottom: 0; }
+.step[hidden] { display: none; }
+
+.step__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  margin-bottom: var(--s2);
+}
+
+.step__num {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  line-height: 1.4;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 0 var(--s1);
+  flex: 0 0 auto;
+}
+
+.step__title {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: -0.01em;
+}
+
+.step__aside {
+  margin-left: auto;
+  font-size: 0.6875rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.step__hint {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  max-width: var(--measure);
+  margin-bottom: var(--s4);
+}
+
+/* ---- grouped chips with progressive disclosure ---- */
+.groups { display: flex; flex-direction: column; gap: var(--s3); }
+.group[hidden] { display: none; }
+
+.chip--parent { display: inline-flex; align-items: baseline; gap: var(--s2); }
+
+.chip__caret {
+  font-size: 0.5625rem;
+  color: var(--ink-3);
+}
+.chip[aria-pressed="true"] .chip__caret { color: var(--accent); }
+
+.chip__count {
+  font-family: var(--font-data);
+  font-size: 0.625rem;
+  background: var(--accent);
+  color: var(--accent-ink);
+  padding: 0 4px;
+  font-weight: 600;
+}
+
+/* Sub-chips are indented under their parent so the hierarchy reads at a glance. */
+.group__body {
+  margin: var(--s2) 0 0 var(--s3);
+  padding-left: var(--s4);
+  border-left: 2px solid var(--accent-soft);
+}
+.group__body[hidden] { display: none; }
+
+.subchips { display: flex; flex-wrap: wrap; gap: var(--s2); }
+.chip--sub { font-size: 0.75rem; }
+
+.group__note {
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  max-width: var(--measure);
+  margin-top: var(--s2);
+}
+.group__note[hidden] { display: none; }
+
+.link-btn {
+  font: inherit;
+  font-size: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+
+.other-field { margin-top: var(--s4); }
+.other-field[hidden] { display: none; }
+
+/* ---- rate badge in the estimate head ---- */
+.tier-badge {
+  font: inherit;
+  font-size: 0.6875rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-weight: 600;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  padding: 1px var(--s2);
+  cursor: pointer;
+  margin-top: var(--s2);
+}
+.tier-badge:hover { filter: brightness(1.05); }
+
+/* ============================================================
    Service catalogue
    ============================================================ */
 .category { margin-bottom: var(--s6); }
@@ -327,8 +452,8 @@ p { margin: 0; }
 
 .item {
   display: grid;
-  /* The rate column has to hold "$4,500.00 / sample" on one line — the widest
-     combination in the schedule — or the unit wraps beneath the figure. */
+  /* The rate column has to hold "$4,500.00 / sample" on one line (the widest
+     combination in the schedule) or the unit wraps beneath the figure. */
   grid-template-columns: minmax(0, 1fr) 8.5rem 5.5rem 7rem;
   align-items: center;
   gap: var(--s3);
@@ -401,6 +526,16 @@ p { margin: 0; }
 
 /* Notes flagging a cost the estimate cannot capture read as a caution. */
 .item__note--caution { color: var(--warn); }
+
+.item__flag--auto {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+/* An automatic figure sits in the box as a placeholder so that typing replaces
+   it rather than adding to it. Grey placeholder text reads as an empty field,
+   so it takes the accent colour to show it is a real, live value. */
+.item--auto .item__qty::placeholder { color: var(--accent); opacity: 1; }
 
 .item__flag {
   font-size: 0.5625rem;
@@ -598,7 +733,7 @@ p { margin: 0; }
 }
 
 /* ============================================================
-   Print — the estimate becomes the quote
+   Print: the estimate panel becomes the printable sheet
    ============================================================ */
 .print-only { display: none; }
 
@@ -620,9 +755,11 @@ p { margin: 0; }
 
   .no-print,
   .setup,
+  .step,
   .catalogue,
   .instrument-bar,
   .theme-toggle,
+  .tier-badge,
   .actions,
   .surcharges { display: none !important; }
 
@@ -646,8 +783,9 @@ p { margin: 0; }
       <p class="eyebrow">Pacific Centre for Isotopic and Geochemical Research</p>
       <h1 class="masthead__title">Fee estimator</h1>
       <p class="masthead__sub">
-        Build an indicative cost for analytical work at PCIGR. Choose your rate category, enter
-        sample or instrument-hour counts, and the estimate assembles on the right.
+        Build an indicative cost for analytical work at PCIGR. Work through samples, analysis and
+        instrument, enter your counts, and set the rate category at the end. The estimate
+        assembles as you go.
       </p>
       <div class="instrument-bar" aria-hidden="true">
         <span>HR-SF-ICP-MS</span><span>Q-ICP-MS</span><span>MC-ICP-MS</span>
@@ -663,8 +801,87 @@ p { margin: 0; }
 
     <!-- ==================== Left: configuration ==================== -->
     <main>
-      <section class="setup" aria-labelledby="setup-heading">
-        <h2 id="setup-heading" class="eyebrow">Step one — who is paying</h2>
+      <!-- Step 1 ------------------------------------------------------------ -->
+      <section class="step" aria-labelledby="step-samples">
+        <div class="step__head">
+          <span class="step__num">1</span>
+          <h2 class="step__title" id="step-samples">Samples</h2>
+          <span class="step__aside">optional</span>
+        </div>
+        <p class="step__hint">
+          What are you sending us? Choose a category to open its list, then narrow further if you
+          want to. This only shortens what follows, so skip it entirely if you would rather
+          browse the whole schedule.
+        </p>
+        <div class="groups" id="material-groups"></div>
+
+        <div class="other-field" id="material-other-field" hidden>
+          <label class="field__label eyebrow" for="material-other">Describe the material</label>
+          <input class="text-input" type="text" id="material-other"
+                 placeholder="e.g. experimental run products, e-waste, mixed residue" autocomplete="off">
+          <p class="field__hint">
+            Unusual materials are quoted individually. Nothing is filtered out while this is set,
+            and your description travels with the summary.
+          </p>
+        </div>
+      </section>
+
+      <!-- Step 2 ------------------------------------------------------------ -->
+      <section class="step" aria-labelledby="step-analysis">
+        <div class="step__head">
+          <span class="step__num">2</span>
+          <h2 class="step__title" id="step-analysis">Analysis</h2>
+          <span class="step__aside">optional</span>
+        </div>
+        <p class="step__hint">
+          Choose what you need to know. The instrument is selected by the analysis required, so
+          the next step only offers instruments that can do this work.
+        </p>
+        <div class="groups" id="analysis-groups"></div>
+      </section>
+
+      <!-- Step 3 ------------------------------------------------------------ -->
+      <section class="step" id="step-instrument-section" aria-labelledby="step-instrument">
+        <div class="step__head">
+          <span class="step__num">3</span>
+          <h2 class="step__title" id="step-instrument">Instrument</h2>
+          <span class="step__aside">optional</span>
+        </div>
+        <p class="step__hint" id="instrument-hint">
+          Only instruments that can do the work above are offered. Where the instrument changes the
+          price, as with U-Pb by laser ablation against CA-TIMS, both appear as separate
+          priced lines in step four rather than as a choice here.
+        </p>
+        <div class="groups" id="instrument-groups"></div>
+      </section>
+
+      <!-- Step 4 ------------------------------------------------------------ -->
+      <section class="step catalogue" aria-labelledby="step-services">
+        <div class="step__head">
+          <span class="step__num">4</span>
+          <h2 class="step__title" id="step-services">Services and quantities</h2>
+        </div>
+        <p class="step__hint">
+          Enter sample counts or instrument hours. Anything you have entered a quantity for stays
+          visible even if it falls outside the choices above, so nothing is ever billed while hidden.
+        </p>
+        <div id="catalogue"></div>
+        <p class="callout" id="no-matches" hidden>
+          Nothing in the schedule matches that combination. Widen or clear a choice above, or
+          <button type="button" class="link-btn" id="clear-filters">show the full fee
+          schedule</button>.
+        </p>
+      </section>
+
+      <!-- Step 5 ------------------------------------------------------------ -->
+      <section class="step" id="step-rate-section" aria-labelledby="step-rate">
+        <div class="step__head">
+          <span class="step__num">5</span>
+          <h2 class="step__title" id="step-rate">Who is paying</h2>
+        </div>
+        <p class="step__hint">
+          Estimates are shown at the NSERC / Canadian academic rate until you change this.
+        </p>
 
         <div>
           <span class="field__label eyebrow" id="tier-label">Rate category</span>
@@ -676,39 +893,12 @@ p { margin: 0; }
           </p>
         </div>
 
-        <div class="filters">
-          <div>
-            <span class="field__label eyebrow" id="material-label">Narrow by material</span>
-            <div class="chips" role="group" aria-labelledby="material-label" id="material-chips"></div>
-          </div>
-
-          <div>
-            <span class="field__label eyebrow" id="instrument-label">Narrow by instrument</span>
-            <div class="chips" role="group" aria-labelledby="instrument-label" id="instrument-chips"></div>
-          </div>
-
-          <p class="field__hint">
-            Both filters are optional and apply together — choosing <em>zircon</em> and
-            <em>LA-ICP-MS</em> shows only laser ablation work on zircon. Nothing is priced
-            differently; this only shortens the list. Anything you have already entered a
-            quantity for stays visible.
-          </p>
-        </div>
-
-        <div>
-          <label class="field__label eyebrow" for="reference">Project or client reference <span style="text-transform:none;letter-spacing:0;font-weight:400;">(appears on the printed quote)</span></label>
-          <input class="text-input" type="text" id="reference" placeholder="e.g. Smith — Cordilleran detrital zircon suite" autocomplete="off">
+        <div style="margin-top:var(--s5);">
+          <label class="field__label eyebrow" for="reference">Project or client reference <span style="text-transform:none;letter-spacing:0;font-weight:400;">(appears on the printed estimate)</span></label>
+          <input class="text-input" type="text" id="reference" placeholder="e.g. Smith, Cordilleran detrital zircon suite" autocomplete="off">
         </div>
       </section>
 
-      <section class="catalogue" aria-labelledby="catalogue-heading">
-        <h2 id="catalogue-heading" class="eyebrow" style="margin-bottom:var(--s4);">Step two — select services</h2>
-        <div id="catalogue"></div>
-        <p class="callout" id="no-matches" hidden>
-          No services match that combination of material and instrument. Widen either filter —
-          <strong>All materials</strong> or <strong>All instruments</strong> — to see more.
-        </p>
-      </section>
     </main>
 
     <!-- ==================== Right: live estimate ==================== -->
@@ -717,7 +907,9 @@ p { margin: 0; }
         <p class="eyebrow">Indicative estimate</p>
         <h2 class="estimate__title" id="estimate-heading">Cost summary</h2>
         <p class="estimate__tier" id="estimate-tier"></p>
+        <button type="button" class="tier-badge no-print" id="tier-badge"></button>
         <p class="estimate__tier print-only" id="print-reference"></p>
+        <p class="estimate__tier print-only" id="print-scope"></p>
         <p class="estimate__tier print-only" id="print-date"></p>
       </div>
 
@@ -726,7 +918,13 @@ p { margin: 0; }
 
       <div class="totals" id="totals"></div>
 
-      <div class="surcharges no-print">
+      <p class="callout callout--info" id="enquire-notice" hidden>
+        Rates for non-Canadian institutions and non-profit organisations are quoted individually,
+        so no total is shown. Copy the summary below and send it to
+        <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a>, and PCIGR will price the work.
+      </p>
+
+      <div class="surcharges no-print" id="surcharges">
         <label class="check">
           <input type="checkbox" id="rush">
           <span>Rush request <small>Adds 40% to the analytical subtotal.</small></span>
@@ -739,14 +937,21 @@ p { margin: 0; }
 
       <p class="callout callout--info" id="combined-notice" hidden></p>
 
+      <p class="callout" id="catims-warning" hidden>
+        The U-Pb CA-TIMS price already includes mineral separation and 40 screening spots. Booking
+        separation or sample preparation alongside it will usually double-charge for the same work.
+        Check with PCIGR before relying on this figure.
+      </p>
+
       <p class="callout" id="card-warning" hidden>
-        This estimate exceeds the $10,000 CAD credit-card ceiling — arrange payment by
+        This estimate exceeds the $10,000 CAD credit-card ceiling. Arrange payment by
         invoice or internal transfer.
       </p>
 
       <div class="actions no-print">
         <button type="button" class="btn btn--primary" id="print">Save as PDF</button>
         <button type="button" class="btn" id="copy">Copy summary</button>
+        <button type="button" class="btn" id="download-rates">Download rates (CSV)</button>
         <button type="button" class="btn" id="reset">Reset</button>
       </div>
 
@@ -766,9 +971,9 @@ p { margin: 0; }
 "use strict";
 
 /* ============================================================================
-   RATE SCHEDULE — single source of truth.
+   RATE SCHEDULE: single source of truth.
    Rates are ordered [NSERC/Canadian academic, Canadian government, Others/industry].
-   Transcribed from https://pcigr.ubc.ca/fees — verify against the live page
+   Transcribed from https://pcigr.ubc.ca/fees. Verify against the live page
    before publishing, and update `SCHEDULE_REVISED` whenever these change.
    ============================================================================ */
 
@@ -777,39 +982,186 @@ const SCHEDULE_REVISED = "6 August 2026";
 const TIERS = [
   { id: "academic",   name: "NSERC / Canadian academic", short: "NSERC / Canadian academic rate" },
   { id: "government", name: "Canadian government",       short: "Canadian government rate" },
-  { id: "industry",   name: "Others (industry)",         short: "Industry rate" }
+  { id: "industry",   name: "Others (industry)",         short: "Industry rate" },
+
+  // The published schedule has three rate columns and none of them apply here.
+  // Rather than let somebody abroad quietly read a Canadian figure, this tier
+  // prices nothing at all and asks them to make contact.
+  { id: "enquire",    name: "Outside Canada / non-profit",
+    short: "Rates quoted individually", enquire: true }
 ];
 
-const MATERIALS = [
-  { id: "all",       name: "All materials" },
-  { id: "rock",      name: "Whole rock" },
-  { id: "zircon",    name: "Zircon" },
-  { id: "carbonate", name: "Carbonate" },
-  { id: "organic",   name: "Organic, soil & sediment" },
-  { id: "water",     name: "Water & solutions" },
-  { id: "sulfide",  name: "Sulfide & galena" },
-  { id: "garnet",    name: "Garnet & apatite" }
+const isEnquireTier = () => Boolean(TIERS[state.tier].enquire);
+
+/** The rate for the chosen tier, or null when there is no published rate. */
+const rateFor = rates => (isEnquireTier() ? null : rates[state.tier]);
+
+/* ----------------------------------------------------------------------------
+   TAXONOMY: navigation only. None of this changes a price.
+
+   The fee schedule is flat: PCIGR prices the 29 items in CATALOGUE below and
+   nothing else. Everything here is a lens onto those same 29 items, so a
+   taxonomy change can never alter an amount. Group `tags`/`instruments` must be
+   the union of their options', which matchesGroup relies on.
+   ---------------------------------------------------------------------------- */
+
+/** Sample material. `tags` are catalogue tag ids; an empty list constrains nothing. */
+const MATERIAL_GROUPS = [
+  { id: "rock", name: "Whole rock", tags: ["rock", "sulfide"], options: [
+    { id: "powder", name: "Powder",                          tags: ["rock"] },
+    { id: "chip",   name: "Chips or grains",                 tags: ["rock"] },
+    { id: "ore",    name: "Ore & massive sulfide",           tags: ["sulfide", "rock"] },
+    { id: "synth",  name: "Experimental or synthetic solid", tags: ["rock"], enquire: true }
+  ]},
+
+  { id: "mineral", name: "Minerals", tags: ["zircon", "garnet", "carbonate", "sulfide", "feldspar"], options: [
+    { id: "zircon",    name: "Zircon",        tags: ["zircon"] },
+    { id: "garnet",    name: "Garnet",        tags: ["garnet"] },
+    { id: "apatite",   name: "Apatite",       tags: ["garnet"] },
+    { id: "carbonate", name: "Carbonate",     tags: ["carbonate"] },
+    { id: "feldspar",  name: "Feldspar",      tags: ["feldspar"] },
+    { id: "galena",    name: "Galena",        tags: ["sulfide"] },
+    { id: "sulfide",   name: "Other sulfide", tags: ["sulfide"] },
+    { id: "others",    name: "Others",        tags: [] }
+  ]},
+
+  { id: "solution", name: "Solutions", tags: ["water"], options: [
+    { id: "fresh", name: "Natural fresh water",  tags: ["water"] },
+    { id: "sea",   name: "Seawater",             tags: ["water"] },
+    { id: "brine", name: "Brine",                tags: ["water"], enquire: true },
+    { id: "lab",   name: "Laboratory solution",  tags: ["water"] }
+  ]},
+
+  { id: "organic", name: "Organic material & sediment", tags: ["organic", "carbonate"], options: [
+    { id: "soil",     name: "Soil",                       tags: ["organic"] },
+    { id: "sediment", name: "Sediment",                   tags: ["organic"] },
+    { id: "plant",    name: "Plant & organic matter",     tags: ["organic"] },
+    { id: "shell",    name: "Shell & biogenic carbonate", tags: ["carbonate"] }
+  ]},
+
+  // Empty tags constrain nothing, which is the only honest behaviour for a
+  // material we have not anticipated: show the whole schedule and capture the
+  // description so a human can price it.
+  { id: "other", name: "Other (specify)", tags: [], other: true, options: [] }
 ];
 
-const INSTRUMENTS = [
-  { id: "all",   name: "All instruments" },
-  { id: "hrsf",  name: "HR-SF-ICP-MS" },
-  { id: "quad",  name: "Q-ICP-MS" },
-  { id: "la",    name: "LA-ICP-MS" },
-  { id: "mc",    name: "MC-ICP-MS" },
-  { id: "tims",  name: "TIMS" },
-  { id: "irms",  name: "IRMS" },
-  { id: "prep",  name: "Preparation lab" }
+/** What the visitor wants to know. Option ids join their group as "group:option". */
+const ANALYSES = [
+  { id: "elemental", name: "Element concentrations", hint: "How much of each element is present",
+    note: "Major elements are run on the Agilent quadrupole (single or triple quad) and charged "
+        + "by the hour. Trace elements can be either a per-sample package or booked instrument time.",
+    options: [
+      { id: "trace",  name: "Trace elements" },
+      { id: "major",  name: "Major elements", enquire: true },
+      { id: "insitu", name: "In situ (laser ablation)" }
+    ]},
+
+  { id: "stable", name: "Light stable isotopes", hint: "δ¹³C, δ¹⁵N, δ¹⁸O",
+    options: [
+      { id: "cn", name: "δ¹⁵N, δ¹³C: solids" },
+      { id: "co", name: "δ¹³C, δ¹⁸O: carbonates" }
+    ]},
+
+  { id: "radiogenic", name: "Radiogenic isotope ratios", hint: "Provenance and tracing: ratios, not ages",
+    options: [
+      { id: "sr", name: "Sr" },
+      { id: "nd", name: "Nd" },
+      { id: "hf", name: "Hf" },
+      { id: "pb", name: "Pb" }
+    ]},
+
+  { id: "geochron", name: "Geochronology (dating)", hint: "Ages: U-Pb and Lu-Hf",
+    options: [
+      { id: "upb",  name: "U-Pb" },
+      { id: "luhf", name: "Lu-Hf" }
+    ]},
+
+  { id: "prep", name: "Sample preparation", hint: "Crushing, separation, dissolution and wet chemistry",
+    options: [
+      { id: "crush",       name: "Crushing" },
+      { id: "minsep",      name: "Mineral separation" },
+      { id: "dissolution", name: "Dissolution" },
+      { id: "wetchem",     name: "Wet chemistry & leaching" }
+    ]}
+];
+
+/** Instruments, condensed. `instruments` are catalogue instrument ids. */
+const INSTRUMENT_GROUPS = [
+  { id: "icpms", name: "ICP-MS", instruments: ["hrsf", "quad", "mc", "la"], options: [
+    { id: "hrsf", name: "HR-SF (Element 2 / AttoM)", instruments: ["hrsf"] },
+    { id: "quad", name: "Quadrupole (single & triple)", instruments: ["quad"] },
+    { id: "mc",   name: "Multicollector",            instruments: ["mc"] },
+    { id: "la",   name: "Laser ablation",            instruments: ["la"] }
+  ]},
+  { id: "tims", name: "TIMS",             instruments: ["tims"], options: [] },
+  { id: "irms", name: "IRMS",             instruments: ["irms"], options: [] },
+  { id: "prep", name: "Preparation lab",  instruments: ["prep"], options: [] }
+];
+
+/* ----------------------------------------------------------------------------
+   Which analyses each priced item answers, as "group:option" facets.
+
+   Held apart from CATALOGUE deliberately: every rate below was verified line by
+   line against the live fees page, so those lines stay untouched. init() warns
+   in the console if an item is missing from this map, which is how a future
+   catalogue addition announces that it needs classifying.
+
+   Technician setup carries no facet: it is support, not an analysis, and is
+   governed by the coverage rules in applyFilter instead.
+   ---------------------------------------------------------------------------- */
+const ANALYSIS_FACETS = {
+  "tech-sol":    [],
+  "tech-laser":  [],
+
+  "elem-hr":     ["elemental:trace"],
+  "elem-quad":   ["elemental:trace", "elemental:major"],
+  "elem-trace":  ["elemental:trace"],
+  "elem-laser":  ["elemental:insitu", "elemental:trace"],
+
+  "irms-cn":     ["stable:cn"],
+  "irms-carb":   ["stable:co"],
+  "irms-self":   ["stable:cn", "stable:co", "prep:wetchem"],
+  "irms-tech":   ["stable:cn", "stable:co", "prep:wetchem"],
+
+  "tims-sr":     ["radiogenic:sr"],
+  "tims-nd":     ["radiogenic:nd"],
+  "tims-pb-gal": ["radiogenic:pb"],
+  "tims-pb-fsp": ["radiogenic:pb"],
+
+  "mc-nd":       ["radiogenic:nd"],
+  "mc-hf":       ["radiogenic:hf"],
+  "mc-hf-conc":  ["radiogenic:hf"],
+  "mc-hf-zrn":   ["radiogenic:hf"],
+  "mc-pb":       ["radiogenic:pb"],
+
+  "upb-prep":    ["geochron:upb", "prep:minsep"],
+  "upb-catims":  ["geochron:upb"],
+  "upb-la-det":  ["geochron:upb"],
+  "upb-la-ign":  ["geochron:upb"],
+  "luhf-grt":    ["geochron:luhf"],
+
+  "prep-crush":  ["prep:crush"],
+  "prep-leach":  ["prep:wetchem"],
+  "prep-bomb":   ["prep:dissolution"],
+  "prep-micro":  ["prep:dissolution"],
+  "prep-minsep": ["prep:minsep"]
+};
+
+/** Facet groups, in the order they are asked. */
+const FACETS = [
+  { key: "material",   groups: MATERIAL_GROUPS,   containerId: "material-groups" },
+  { key: "analysis",   groups: ANALYSES,          containerId: "analysis-groups" },
+  { key: "instrument", groups: INSTRUMENT_GROUPS, containerId: "instrument-groups" }
 ];
 
 const CATALOGUE = [
   {
     name: "Technician time",
     meta: "Labour",
-    note: "Setup and tuning fill in automatically from the ICP-MS hours you book: 1.5 h (solution) or 2 h (laser) per 24-hour interval of instrument time, at the technician rate. Type into either field to override the automatic figure — your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
+    note: "Setup and tuning fill in automatically from the ICP-MS hours you book: 1.5 h (solution) or 2 h (laser) per 24-hour interval of instrument time, at the technician rate. Type into either field to override the automatic figure; your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
     items: [
-      { id: "tech-sol",   name: "Instrument setup and tuning — solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet"], instruments: ["hrsf","quad"] },
-      { id: "tech-laser", name: "Instrument setup and tuning — laser",    unit: "hour", rates: [120, 180, 240], tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"] }
+      { id: "tech-sol",   name: "Instrument setup and tuning: solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet"], instruments: ["hrsf","quad"] },
+      { id: "tech-laser", name: "Instrument setup and tuning: laser",    unit: "hour", rates: [120, 180, 240], tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"] }
     ]
   },
   {
@@ -820,17 +1172,17 @@ const CATALOGUE = [
       { id: "elem-hr", name: "Element 2 / AttoM HR-SF-ICP-MS", unit: "hour", rates: [75, 115, 150],
         tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet"], instruments: ["hrsf"],
         caution: true,
-        note: "Special sample introduction systems such as Aridus carry additional charges — contact PCIGR for availability." },
+        note: "Special sample introduction systems such as Aridus carry additional charges. Contact PCIGR for availability." },
 
       { id: "elem-quad", name: "Agilent 7700x / 8900 quadrupole ICP-MS", unit: "hour", rates: [65, 100, 130],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["quad"],
         caution: true,
-        note: "Special sample introduction systems such as Aridus carry additional charges — contact PCIGR for availability." },
+        note: "Special sample introduction systems such as Aridus carry additional charges. Contact PCIGR for availability." },
 
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["hrsf","quad"],
         caution: true,
-        note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion — add that separately under Sample preparation if required." },
+        note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion. Add that separately under Sample preparation if required." },
 
       { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
         tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"],
@@ -840,23 +1192,23 @@ const CATALOGUE = [
   {
     name: "Light stable isotopes",
     meta: "IRMS",
-    note: "Waters, H/D materials and artificially enriched isotope samples cannot be analysed. Samples that shorten EA column life — those with salt content or acid residue — attract an added cost on top of the analysis fee. Contact Dr. Kendra Chritz (kendra.chritz@ubc.ca) about high-volume projects or organic soils.",
+    note: "Waters, H/D materials and artificially enriched isotope samples cannot be analysed. Samples that shorten EA column life (those with salt content or acid residue) attract an added cost on top of the analysis fee. Contact Dr. Kendra Chritz (kendra.chritz@ubc.ca) about high-volume projects or organic soils.",
     items: [
-      { id: "irms-cn",    name: "δ¹⁵N, δ¹³C — solid samples",       unit: "sample", rates: [16, 25, 50],       tags: ["rock","organic","carbonate"], instruments: ["irms"] },
-      { id: "irms-carb",  name: "δ¹³C, δ¹⁸O — carbonates",          unit: "sample", rates: [18, 27, 52],       tags: ["carbonate"], instruments: ["irms"] },
-      { id: "irms-self",  name: "Sample preparation — self-serve",  unit: "sample", rates: [4.85, 4.85, 5.50], tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] },
-      { id: "irms-tech",  name: "Sample preparation — technician",  unit: "hour",   rates: [26, 26, 52],       tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] }
+      { id: "irms-cn",    name: "δ¹⁵N, δ¹³C: solid samples",       unit: "sample", rates: [16, 25, 50],       tags: ["rock","organic","carbonate"], instruments: ["irms"] },
+      { id: "irms-carb",  name: "δ¹³C, δ¹⁸O: carbonates",          unit: "sample", rates: [18, 27, 52],       tags: ["carbonate"], instruments: ["irms"] },
+      { id: "irms-self",  name: "Sample preparation: self-serve",  unit: "sample", rates: [4.85, 4.85, 5.50], tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] },
+      { id: "irms-tech",  name: "Sample preparation: technician",  unit: "hour",   rates: [26, 26, 52],       tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] }
     ]
   },
   {
     name: "Radiogenic isotopes",
     meta: "TIMS",
-    note: "Extra fees apply for mineral separation where needed — add it under Sample preparation. Contact PCIGR for pricing on combined isotopic analyses from the same dissolution, which is cheaper than ordering them separately.",
+    note: "Extra fees apply for mineral separation where needed. Add it under Sample preparation. Contact PCIGR for pricing on combined isotopic analyses from the same dissolution, which is cheaper than ordering them separately.",
     items: [
       { id: "tims-sr",      name: "Sr isotopic analysis",              unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate"], instruments: ["tims"] },
       { id: "tims-nd",      name: "Nd isotopic analysis",              unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["tims"] },
-      { id: "tims-pb-gal",  name: "Pb isotopes — galena",              unit: "sample", rates: [100, 150, 200], tags: ["sulfide"], instruments: ["tims"] },
-      { id: "tims-pb-fsp",  name: "Pb isotopes — feldspar / sulfide", unit: "sample", rates: [200, 300, 400], tags: ["rock","sulfide"], instruments: ["tims"] }
+      { id: "tims-pb-gal",  name: "Pb isotopes: galena",              unit: "sample", rates: [100, 150, 200], tags: ["sulfide"], instruments: ["tims"] },
+      { id: "tims-pb-fsp",  name: "Pb isotopes: feldspar / sulfide", unit: "sample", rates: [200, 300, 400], tags: ["rock","sulfide","feldspar"], instruments: ["tims"] }
     ]
   },
   {
@@ -884,13 +1236,13 @@ const CATALOGUE = [
       { id: "upb-catims", name: "U-Pb CA-TIMS", unit: "sample", rates: [2100, 3150, 4200],
         tags: ["zircon","rock"], instruments: ["tims"],
         caution: true,
-        note: "A typical per-sample cost already includes mineral separation, 40 LA-ICP-MS spots to select grains for chemical abrasion, and 5 CA-TIMS fractions — do not add those separately. Additional grains or fractions from the same separate are charged extra. Turnaround is 6–8 months for five samples or fewer, or 3–4 months with rush status; contact PCIGR for turnaround on larger submissions." },
+        note: "A typical per-sample cost already includes mineral separation, 40 LA-ICP-MS spots to select grains for chemical abrasion, and 5 CA-TIMS fractions. Do not add those separately. Additional grains or fractions from the same separate are charged extra. Turnaround is 6–8 months for five samples or fewer, or 3–4 months with rush status; contact PCIGR for turnaround on larger submissions." },
 
-      { id: "upb-la-det", name: "U-Pb laser ablation — detrital", unit: "sample", rates: [1200, 1800, 2400],
+      { id: "upb-la-det", name: "U-Pb laser ablation: detrital", unit: "sample", rates: [1200, 1800, 2400],
         tags: ["zircon","rock"], instruments: ["la"],
         note: "Minimum 60 grains per sample." },
 
-      { id: "upb-la-ign", name: "U-Pb laser ablation — igneous", unit: "sample", rates: [1000, 1500, 2000],
+      { id: "upb-la-ign", name: "U-Pb laser ablation: igneous", unit: "sample", rates: [1000, 1500, 2000],
         tags: ["zircon","rock"], instruments: ["la"],
         note: "Minimum 16 analyses per sample." }
     ]
@@ -899,7 +1251,7 @@ const CATALOGUE = [
     name: "Lu-Hf geochronology",
     meta: "ID-MC-ICP-MS",
     items: [
-      { id: "luhf-grt", name: "Garnet, apatite — ID-MC-ICP-MS", unit: "sample", rates: [2250, 3400, 4500],
+      { id: "luhf-grt", name: "Garnet, apatite: ID-MC-ICP-MS", unit: "sample", rates: [2250, 3400, 4500],
         tags: ["garnet","rock"], instruments: ["mc"],
         note: "Contact Prof. Matthijs Smit with questions about Lu-Hf geochronology." }
     ]
@@ -927,7 +1279,7 @@ const CARD_CEILING = 10000;
 
    1.5 h (solution) and 2 h (laser) of setup and tuning are standard per 24-hour
    interval of instrument time, charged at the technician labour rate. Setup
-   beyond that allowance is charged at the instrument's own hourly (gas) rate —
+   beyond that allowance is charged at the instrument's own hourly (gas) rate,
    which is simply the instrument-time rate the operator already books, so no
    separate line is generated for it.
 
@@ -940,12 +1292,12 @@ const CARD_CEILING = 10000;
    Combined-analysis pricing.
 
    PCIGR quotes analyses sharing a single dissolution below the sum of their
-   individual prices, but does not publish those figures — the fees page says
+   individual prices, but does not publish those figures. The fees page says
    to contact the centre. Rather than infer a discount policy, this is a plain
    lookup table: add a row per package PCIGR actually offers, with its agreed
    rates as [NSERC/academic, Canadian government, industry].
 
-   A row with `rates: null` is treated as "price on application" — the
+   A row with `rates: null` is treated as "price on application": the
    estimator prices the analyses individually and flags that a combined
    quotation is available. Fill in the rates and it applies them automatically
    in place of the individual lines, for as many samples as carry the whole set.
@@ -974,8 +1326,19 @@ const SETUP_RULES = {
 
 const state = {
   tier: 0,
-  material: "all",
-  instrument: "all",
+
+  /* One Map per facet: groupId -> Set of chosen option ids.
+     No entry for a group  -> that group is not selected.
+     Entry with empty Set  -> the whole group (its parent chip is on, nothing narrowed).
+     Entry with option ids -> only those options.
+     An empty Map means the facet constrains nothing. */
+  selections: {
+    material:   new Map(),
+    analysis:   new Map(),
+    instrument: new Map()
+  },
+
+  materialOther: "",
   quantities: Object.create(null),
   rush: false,
   card: false
@@ -1016,25 +1379,193 @@ function buildTiers() {
   });
 }
 
-function buildChipGroup(containerId, options, stateKey) {
-  const wrap = $(containerId);
-  options.forEach(option => {
-    const chip = document.createElement("button");
-    chip.type = "button";
-    chip.className = "chip";
-    chip.textContent = option.name;
-    chip.dataset.value = option.id;
-    chip.dataset.stateKey = stateKey;
-    chip.setAttribute("aria-pressed", String(option.id === state[stateKey]));
-    chip.addEventListener("click", () => {
-      state[stateKey] = option.id;
-      wrap.querySelectorAll(".chip").forEach((other, i) => {
-        other.setAttribute("aria-pressed", String(options[i].id === state[stateKey]));
-      });
-      applyFilter();
+/* ---------------------------------------------------------------------------
+   Grouped chips.
+
+   A parent chip toggles its whole group on and off and reveals the sub-chips
+   beneath it. Selecting no sub-chip means "all of this group", which is what
+   somebody who clicks Minerals and stops almost certainly wants. Sub-chips
+   narrow from there. Nothing here is required: an untouched facet constrains
+   nothing, so the estimator still works if every step is skipped.
+   --------------------------------------------------------------------------- */
+
+const facetByKey = key => FACETS.find(facet => facet.key === key);
+
+function toggleGroup(key, groupId) {
+  const selected = state.selections[key];
+  if (selected.has(groupId)) selected.delete(groupId);
+  else selected.set(groupId, new Set());
+}
+
+function toggleOption(key, groupId, optionId) {
+  const selected = state.selections[key];
+  const chosen = selected.get(groupId) || new Set();
+  if (chosen.has(optionId)) chosen.delete(optionId);
+  else chosen.add(optionId);
+  // The group stays selected even when the last sub-chip is cleared, which
+  // reverts it to meaning "all of this group" rather than silently switching
+  // the whole facet off under the visitor.
+  selected.set(groupId, chosen);
+}
+
+function buildFacet(facet) {
+  const root = $(facet.containerId);
+
+  facet.groups.forEach(group => {
+    const wrap = document.createElement("div");
+    wrap.className = "group";
+    wrap.dataset.facet = facet.key;
+    wrap.dataset.groupId = group.id;
+
+    const parent = document.createElement("button");
+    parent.type = "button";
+    parent.className = "chip chip--parent";
+    parent.dataset.role = "parent";
+    parent.setAttribute("aria-pressed", "false");
+
+    parent.append(Object.assign(document.createElement("span"), { textContent: group.name }));
+
+    if (group.options.length) {
+      const count = document.createElement("span");
+      count.className = "chip__count";
+      count.dataset.role = "count";
+      count.hidden = true;
+
+      const caret = document.createElement("span");
+      caret.className = "chip__caret";
+      caret.textContent = "\u25be";
+      caret.setAttribute("aria-hidden", "true");
+
+      parent.append(count, caret);
+      parent.setAttribute("aria-expanded", "false");
+    }
+
+    parent.addEventListener("click", () => {
+      toggleGroup(facet.key, group.id);
+      render();
     });
-    wrap.append(chip);
+
+    wrap.append(parent);
+
+    const body = document.createElement("div");
+    body.className = "group__body";
+    body.dataset.role = "body";
+    body.hidden = true;
+
+    if (group.options.length) {
+      const subs = document.createElement("div");
+      subs.className = "subchips";
+      group.options.forEach(option => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "chip chip--sub";
+        chip.textContent = option.name;
+        chip.dataset.optionId = option.id;
+        chip.setAttribute("aria-pressed", "false");
+        chip.addEventListener("click", () => {
+          toggleOption(facet.key, group.id, option.id);
+          render();
+        });
+        subs.append(chip);
+      });
+      body.append(subs);
+    }
+
+    if (group.hint) {
+      body.append(Object.assign(document.createElement("p"), {
+        className: "group__note", textContent: group.hint
+      }));
+    }
+
+    if (group.note) {
+      body.append(Object.assign(document.createElement("p"), {
+        className: "group__note", textContent: group.note
+      }));
+    }
+
+    wrap.append(body);
+
+    // Contextual prompts sit outside the body so they are visible even when the
+    // group is closed, the whole point being to catch somebody who has not opened it.
+    const nudge = document.createElement("p");
+    nudge.className = "group__note";
+    nudge.dataset.role = "nudge";
+    nudge.hidden = true;
+    wrap.append(nudge);
+
+    root.append(wrap);
   });
+}
+
+/** Push state back into the chips: pressed states, counts, disclosure, prompts. */
+function syncFacets() {
+  FACETS.forEach(facet => {
+    const selected = state.selections[facet.key];
+
+    facet.groups.forEach(group => {
+      const wrap = document.querySelector(
+        `.group[data-facet="${facet.key}"][data-group-id="${group.id}"]`);
+      if (!wrap) return;
+
+      const on = selected.has(group.id);
+      const chosen = selected.get(group.id) || new Set();
+
+      const parent = wrap.querySelector('[data-role="parent"]');
+      parent.setAttribute("aria-pressed", String(on));
+      if (group.options.length) parent.setAttribute("aria-expanded", String(on));
+
+      const count = wrap.querySelector('[data-role="count"]');
+      if (count) {
+        count.hidden = chosen.size === 0;
+        count.textContent = String(chosen.size);
+      }
+
+      const body = wrap.querySelector('[data-role="body"]');
+      if (body) body.hidden = !on;
+
+      wrap.querySelectorAll(".chip--sub").forEach(chip => {
+        chip.setAttribute("aria-pressed", String(chosen.has(chip.dataset.optionId)));
+      });
+    });
+  });
+
+  // "Other (specify)" opens a free-text field; while it is set nothing is
+  // filtered out, because an unanticipated material cannot be matched against
+  // tags that were written before it existed.
+  const minerals = state.selections.material.get("mineral");
+  const otherOn = state.selections.material.has("other")
+    || Boolean(minerals && minerals.has("others"));
+  $("material-other-field").hidden = !otherOn;
+
+  renderNudges();
+}
+
+/** Prompts that depend on what has already been chosen. */
+function renderNudges() {
+  const prepWrap = document.querySelector('.group[data-facet="analysis"][data-group-id="prep"]');
+  if (!prepWrap) return;
+
+  const nudge = prepWrap.querySelector('[data-role="nudge"]');
+  const analyses = state.selections.analysis;
+  const geochron = analyses.get("geochron");
+  const wantsUPb = Boolean(geochron) && (geochron.size === 0 || geochron.has("upb"));
+  const prepAlreadyChosen = analyses.has("prep");
+
+  nudge.hidden = !(wantsUPb && !prepAlreadyChosen);
+  if (nudge.hidden) return;
+
+  nudge.textContent = "";
+  nudge.append("U-Pb work normally needs mineral separation and dissolution first. ");
+
+  const open = document.createElement("button");
+  open.type = "button";
+  open.className = "link-btn";
+  open.textContent = "Add sample preparation";
+  open.addEventListener("click", () => {
+    toggleGroup("analysis", "prep");
+    render();
+  });
+  nudge.append(open, ".");
 }
 
 function buildCatalogue() {
@@ -1087,6 +1618,13 @@ function buildCatalogue() {
       }
 
       if (setupModeFor(item.id)) {
+        const flag = document.createElement("span");
+        flag.className = "item__flag item__flag--auto";
+        flag.dataset.role = "auto-flag";
+        flag.textContent = "auto";
+        flag.hidden = true;
+        label.append(" ", flag);
+
         const derivation = document.createElement("small");
         derivation.className = "item__derivation";
         derivation.dataset.role = "derivation";
@@ -1106,7 +1644,7 @@ function buildCatalogue() {
       qty.step = item.unit === "hour" ? "0.5" : "1";
       qty.value = "";
       qty.placeholder = "0";
-      qty.setAttribute("aria-label", `${item.name} — number of ${item.unit === "hour" ? "hours" : "samples"}`);
+      qty.setAttribute("aria-label", `${item.name}, number of ${item.unit === "hour" ? "hours" : "samples"}`);
       qty.addEventListener("input", () => {
         const value = Math.max(0, Number(qty.value) || 0);
         if (value > 0) {
@@ -1140,17 +1678,103 @@ function buildCatalogue() {
    Filtering
    ============================================================================ */
 
-function syncChips() {
-  document.querySelectorAll(".chip").forEach(chip => {
-    chip.setAttribute("aria-pressed", String(chip.dataset.value === state[chip.dataset.stateKey]));
-  });
+const facetsOf = item => ANALYSIS_FACETS[item.id] || [];
+
+/** Does one item satisfy a single chosen sub-option? */
+function optionMatches(key, group, option, item) {
+  // No tags means "something we have not anticipated", so it constrains nothing,
+  // exactly as the group-level rule below does.
+  if (key === "material")   return option.tags.length === 0
+                                || option.tags.some(tag => item.tags.includes(tag));
+  if (key === "instrument") return option.instruments.some(i => item.instruments.includes(i));
+  return facetsOf(item).includes(group.id + ":" + option.id);
 }
 
-function matchesFilters(row) {
-  const materials = row.dataset.tags.split(" ");
-  const instruments = row.dataset.instruments.split(" ");
-  return (state.material === "all" || materials.includes(state.material))
-      && (state.instrument === "all" || instruments.includes(state.instrument));
+/** Does one item satisfy a whole group, with nothing narrowed inside it? */
+function groupMatches(key, group, item) {
+  // A group with no tags, such as "Other (specify)", constrains nothing by design.
+  if (key === "material")   return group.tags.length === 0
+                                || group.tags.some(tag => item.tags.includes(tag));
+  if (key === "instrument") return group.instruments.some(i => item.instruments.includes(i));
+  return facetsOf(item).some(facet => facet.startsWith(group.id + ":"));
+}
+
+/** Selections within a facet are alternatives, so they combine with OR. */
+function matchesFacet(key, item) {
+  const selected = state.selections[key];
+  if (selected.size === 0) return true;
+
+  const groups = facetByKey(key).groups;
+
+  for (const [groupId, chosen] of selected) {
+    const group = groups.find(g => g.id === groupId);
+    if (!group) continue;
+
+    if (chosen.size === 0) {
+      if (groupMatches(key, group, item)) return true;
+      continue;
+    }
+    for (const optionId of chosen) {
+      const option = group.options.find(o => o.id === optionId);
+      if (option && optionMatches(key, group, option, item)) return true;
+    }
+  }
+  return false;
+}
+
+/** The three facets are different questions, so they combine with AND. */
+function matchesFilters(itemId, options) {
+  const entry = ITEMS_BY_ID.get(itemId);
+  if (!entry) return false;
+
+  const item = entry.item;
+  const ignoreAnalysis = Boolean(options && options.ignoreAnalysis);
+
+  return matchesFacet("material", item)
+      && (ignoreAnalysis || matchesFacet("analysis", item))
+      && matchesFacet("instrument", item);
+}
+
+/* ---------------------------------------------------------------------------
+   Step three only asks a question worth asking.
+
+   An instrument group appears when some priced analysis on it survives the
+   material and analysis choices already made. Where those choices leave one
+   instrument or none, there is nothing to decide and the step disappears
+   entirely: the system has picked. Selections that stop being relevant are
+   dropped rather than left applying invisibly.
+   --------------------------------------------------------------------------- */
+
+function relevantInstrumentGroups() {
+  const relevant = new Set();
+
+  INSTRUMENT_GROUPS.forEach(group => {
+    const reachable = Array.from(ITEMS_BY_ID.values()).some(({ item }) =>
+      !setupModeFor(item.id)
+      && matchesFacet("material", item)
+      && matchesFacet("analysis", item)
+      && groupMatches("instrument", group, item));
+
+    if (reachable) relevant.add(group.id);
+  });
+
+  return relevant;
+}
+
+function refreshInstrumentStep() {
+  const relevant = relevantInstrumentGroups();
+
+  Array.from(state.selections.instrument.keys()).forEach(groupId => {
+    if (!relevant.has(groupId)) state.selections.instrument.delete(groupId);
+  });
+
+  INSTRUMENT_GROUPS.forEach(group => {
+    const wrap = document.querySelector(
+      `.group[data-facet="instrument"][data-group-id="${group.id}"]`);
+    if (wrap) wrap.hidden = !relevant.has(group.id);
+  });
+
+  $("step-instrument-section").hidden = relevant.size < 2;
 }
 
 function applyFilter() {
@@ -1158,7 +1782,7 @@ function applyFilter() {
   const visibility = new Map();
   const coveredInstruments = new Set();
 
-  // Pass one — the analyses themselves. Anything being charged stays on screen
+  // Pass one: the analyses themselves. Anything being charged stays on screen
   // regardless of the filters, so nothing is billed while hidden.
   //
   // Only hourly work counts towards instrument coverage: a per-sample price
@@ -1168,14 +1792,14 @@ function applyFilter() {
     const id = row.dataset.itemId;
     if (setupModeFor(id)) return;
 
-    const visible = matchesFilters(row) || effectiveQuantity(id).quantity > 0;
+    const visible = matchesFilters(id) || effectiveQuantity(id).quantity > 0;
     visibility.set(id, visible);
     if (visible && row.dataset.unit === "hour") {
       row.dataset.instruments.split(" ").forEach(i => coveredInstruments.add(i));
     }
   });
 
-  // Pass two — setup and tuning is support, not an analysis. It appears only
+  // Pass two: setup and tuning is support, not an analysis. It appears only
   // when hourly instrument time it supports is on screen, so neither
   // Zircon + Q-ICP-MS (no such analysis) nor a purely per-sample instrument
   // such as MC-ICP-MS offers setup that cannot be ordered or is already paid for.
@@ -1187,7 +1811,9 @@ function applyFilter() {
       .split(" ")
       .some(instrument => coveredInstruments.has(instrument));
 
-    visibility.set(id, (matchesFilters(row) && supportsSomethingVisible)
+    // Setup carries no analysis facet, being support rather than something anyone
+    // comes here to order, so it is judged on material, instrument and coverage alone.
+    visibility.set(id, (matchesFilters(id, { ignoreAnalysis: true }) && supportsSomethingVisible)
       || effectiveQuantity(id).quantity > 0);
   });
 
@@ -1220,7 +1846,7 @@ function setupModeFor(itemId) {
 
 /**
  * Setup hours implied by the instrument time currently booked in a given mode.
- * Each driving instrument accrues its own 24-hour intervals — running two
+ * Each driving instrument accrues its own 24-hour intervals, so running two
  * separate instruments means two separate setups.
  */
 function derivedSetup(mode) {
@@ -1246,8 +1872,8 @@ function derivedSetup(mode) {
 }
 
 /**
- * The quantity actually charged for an item: whatever was typed, or — for the
- * two technician setup rows only, and only while they are empty — the figure
+ * The quantity actually charged for an item: whatever was typed, or (for the
+ * two technician setup rows only, and only while they are empty) the figure
  * derived from booked instrument time.
  */
 function effectiveQuantity(itemId) {
@@ -1266,7 +1892,7 @@ function describeDerivation(derivation) {
   const spans = derivation.parts
     .map(part => `${formatHours(part.hours)} h on ${part.name} = ${part.intervals} × 24 h`)
     .join("; ");
-  return `Automatic — ${spans}, at ${formatHours(derivation.allowance)} h setup per interval`;
+  return `Automatic: ${spans}, at ${formatHours(derivation.allowance)} h setup per interval`;
 }
 
 function formatHours(value) {
@@ -1279,6 +1905,9 @@ function formatHours(value) {
  * `remaining` so the leftovers can be billed individually.
  */
 function applyCombinations(remaining) {
+  // Nothing can be packaged at a rate that does not exist.
+  if (isEnquireTier()) return [];
+
   const packaged = [];
   const priced = COMBINATIONS.filter(c => Array.isArray(c.rates));
 
@@ -1325,7 +1954,7 @@ function computeEstimate() {
       const quantity = remaining[item.id];
       if (!quantity) return;
       const { auto, derivation } = effectiveQuantity(item.id);
-      const rate = item.rates[state.tier];
+      const rate = rateFor(item.rates);
       lines.push({
         name: item.name,
         category: category.name,
@@ -1334,13 +1963,13 @@ function computeEstimate() {
         rate,
         auto,
         derivation,
-        total: rate * quantity
+        total: rate === null ? 0 : rate * quantity
       });
     });
   });
 
   // Anything left that could share a dissolution is worth a quotation, but the
-  // figure is PCIGR's to give — never this tool's to invent.
+  // figure is PCIGR's to give, never this tool's to invent.
   const combinable = SAME_DISSOLUTION.filter(id => (remaining[id] || 0) > 0)
     .map(id => ITEMS_BY_ID.get(id).item.name);
 
@@ -1349,7 +1978,8 @@ function computeEstimate() {
   const beforeCard = subtotal + rush;
   const card = state.card ? beforeCard * CARD_RATE : 0;
 
-  return { lines, subtotal, rush, card, total: beforeCard + card, combinable };
+  return { lines, subtotal, rush, card, total: beforeCard + card, combinable,
+           enquire: isEnquireTier() };
 }
 
 /* ============================================================================
@@ -1359,20 +1989,24 @@ function computeEstimate() {
 function renderRates() {
   document.querySelectorAll(".item").forEach(row => {
     const { item } = ITEMS_BY_ID.get(row.dataset.itemId);
-    const rate = item.rates[state.tier];
+    const rate = rateFor(item.rates);
     const { quantity, auto, derivation } = effectiveQuantity(item.id);
 
     const rateCell = row.querySelector('[data-role="rate"]');
-    rateCell.replaceChildren(
-      document.createTextNode(money.format(rate)),
-      Object.assign(document.createElement("span"), {
-        className: "item__unit",
-        textContent: item.unit === "hour" ? " / h" : " / sample"
-      })
-    );
+    if (rate === null) {
+      rateCell.replaceChildren(document.createTextNode("On request"));
+    } else {
+      rateCell.replaceChildren(
+        document.createTextNode(money.format(rate)),
+        Object.assign(document.createElement("span"), {
+          className: "item__unit",
+          textContent: item.unit === "hour" ? " / h" : " / sample"
+        })
+      );
+    }
 
     row.querySelector('[data-role="line-total"]').textContent =
-      quantity > 0 ? money.format(rate * quantity) : "—";
+      (rate !== null && quantity > 0) ? money.format(rate * quantity) : "\u2013";
 
     row.classList.toggle("item--active", quantity > 0);
     row.classList.toggle("item--auto", auto);
@@ -1383,7 +2017,7 @@ function renderRates() {
     if (setupModeFor(item.id)) {
       input.placeholder = auto ? formatHours(quantity) : "0";
       input.title = auto
-        ? "Filled automatically from booked instrument time — type to override."
+        ? "Filled automatically from booked instrument time. Type to override."
         : "";
     }
 
@@ -1392,6 +2026,9 @@ function renderRates() {
       derivationEl.textContent = auto ? describeDerivation(derivation) : "";
       derivationEl.hidden = !auto;
     }
+
+    const autoFlag = row.querySelector('[data-role="auto-flag"]');
+    if (autoFlag) autoFlag.hidden = !auto;
   });
 }
 
@@ -1422,7 +2059,9 @@ function renderEstimate(estimate) {
     const unitWord = line.unit === "hour"
       ? (line.quantity === 1 ? "hour" : "hours")
       : (line.quantity === 1 ? "sample" : "samples");
-    detail.textContent = `${formatHours(line.quantity)} ${unitWord} × ${money.format(line.rate)}`;
+    detail.textContent = line.rate === null
+      ? `${formatHours(line.quantity)} ${unitWord} × rate on request`
+      : `${formatHours(line.quantity)} ${unitWord} × ${money.format(line.rate)}`;
     name.append(detail);
 
     if (line.auto) {
@@ -1445,7 +2084,7 @@ function renderEstimate(estimate) {
 
     const value = document.createElement("div");
     value.className = "line__value";
-    value.textContent = money.format(line.total);
+    value.textContent = line.rate === null ? "On request" : money.format(line.total);
 
     row.append(name, leader, value);
     linesEl.append(row);
@@ -1467,24 +2106,78 @@ function renderEstimate(estimate) {
     return row;
   };
 
-  addRow("Subtotal", money.format(estimate.subtotal), "sub");
-  if (estimate.rush > 0) addRow("Rush surcharge (40%)", money.format(estimate.rush), "surcharge");
-  if (estimate.card > 0) addRow("Credit card surcharge (3%)", money.format(estimate.card), "surcharge");
-  addRow("Estimated total", money.format(estimate.total), "grand");
+  // No published rate means no total, and a percentage of an unknown number is
+  // worse than nothing, so the surcharges go away with it.
+  if (!estimate.enquire) {
+    addRow("Subtotal", money.format(estimate.subtotal), "sub");
+    if (estimate.rush > 0) addRow("Rush surcharge (40%)", money.format(estimate.rush), "surcharge");
+    if (estimate.card > 0) addRow("Credit card surcharge (3%)", money.format(estimate.card), "surcharge");
+    addRow("Estimated total", money.format(estimate.total), "grand");
+  }
 
-  $("card-warning").hidden = !(state.card && estimate.total > CARD_CEILING);
+  $("enquire-notice").hidden = !estimate.enquire;
+  $("surcharges").hidden = estimate.enquire;
+
+  $("card-warning").hidden = estimate.enquire
+    || !(state.card && estimate.total > CARD_CEILING);
+
+  // CA-TIMS already includes separation and 40 screening spots, so booking either
+  // alongside it usually pays twice for the same work. The fees page says so; the
+  // estimator has never said it back.
+  const catims = state.quantities["upb-catims"] > 0;
+  const separateprep = state.quantities["prep-minsep"] > 0 || state.quantities["upb-prep"] > 0;
+  $("catims-warning").hidden = !(catims && separateprep);
 
   const combined = $("combined-notice");
   combined.hidden = estimate.combinable.length < 2;
   if (!combined.hidden) {
     combined.textContent = `${estimate.combinable.join(", ")} are priced separately above. `
-      + "If these run from the same dissolution, PCIGR can quote them together for less — "
+      + "If these run from the same dissolution, PCIGR can quote them together for less; "
       + "contact pcigr@eoas.ubc.ca before treating this figure as final.";
   }
 }
 
+/** The chosen facets in prose, for the summary and the printed quote. */
+function describeScope() {
+  const parts = [];
+
+  FACETS.forEach(facet => {
+    const selected = state.selections[facet.key];
+    if (selected.size === 0) return;
+
+    const phrases = [];
+    selected.forEach((chosen, groupId) => {
+      const group = facet.groups.find(g => g.id === groupId);
+      if (!group) return;
+      if (chosen.size === 0) {
+        phrases.push(group.name);
+      } else {
+        const names = group.options
+          .filter(option => chosen.has(option.id))
+          .map(option => option.name);
+        phrases.push(`${group.name} (${names.join(", ")})`);
+      }
+    });
+
+    if (phrases.length) {
+      const label = facet.key.charAt(0).toUpperCase() + facet.key.slice(1);
+      parts.push({ label, text: phrases.join("; ") });
+    }
+  });
+
+  if (state.materialOther) parts.push({ label: "Material described as", text: state.materialOther });
+
+  return parts;
+}
+
 function renderHeader() {
-  $("estimate-tier").textContent = TIERS[state.tier].short + " · excludes taxes";
+  $("estimate-tier").textContent = isEnquireTier()
+    ? TIERS[state.tier].short
+    : TIERS[state.tier].short + " · excludes taxes";
+  $("tier-badge").textContent = "Change rate";
+
+  const scope = describeScope();
+  $("print-scope").textContent = scope.map(part => `${part.label}: ${part.text}`).join(" · ");
 
   const reference = $("reference").value.trim();
   const referenceEl = $("print-reference");
@@ -1498,10 +2191,14 @@ function renderHeader() {
 let lastTotal = 0;
 
 function render() {
+  // Relevance first: it can drop instrument selections, which changes filtering.
+  refreshInstrumentStep();
+
   const estimate = computeEstimate();
   renderRates();
   renderEstimate(estimate);
   renderHeader();
+  syncFacets();
   applyFilter();
 
   if (estimate.total !== lastTotal) {
@@ -1516,7 +2213,7 @@ function render() {
 }
 
 /* ============================================================================
-   Plain-text summary — pasteable into email
+   Plain-text summary, pasteable into email
    ============================================================================ */
 
 function buildSummary() {
@@ -1524,10 +2221,18 @@ function buildSummary() {
   const reference = $("reference").value.trim();
   const lines = [];
 
-  lines.push("PCIGR — indicative fee estimate");
+  lines.push("PCIGR indicative fee estimate");
   if (reference) lines.push(`Reference: ${reference}`);
   lines.push(`Rate category: ${TIERS[state.tier].name}`);
   lines.push(`Prepared: ${new Date().toLocaleDateString("en-CA")}`);
+
+  // What was asked for, not only what it costs, so the summary can be pasted
+  // into an email as the beginnings of a service request.
+  const scope = describeScope();
+  if (scope.length) {
+    lines.push("");
+    scope.forEach(part => lines.push(`${part.label}: ${part.text}`));
+  }
   lines.push("");
 
   if (estimate.lines.length === 0) {
@@ -1540,19 +2245,33 @@ function buildSummary() {
         : line.combined
           ? ` [combined package, replaces: ${line.members.join(", ")}]`
           : "";
-      lines.push(`${line.name} — ${formatHours(line.quantity)} ${unitWord} x ${money.format(line.rate)} = ${money.format(line.total)}${flag}`);
+      lines.push(line.rate === null
+        ? `${line.name}: ${formatHours(line.quantity)} ${unitWord} x rate on request${flag}`
+        : `${line.name}: ${formatHours(line.quantity)} ${unitWord} x ${money.format(line.rate)} = ${money.format(line.total)}${flag}`);
     });
     lines.push("");
-    lines.push(`Subtotal: ${money.format(estimate.subtotal)}`);
-    if (estimate.rush > 0) lines.push(`Rush surcharge (40%): ${money.format(estimate.rush)}`);
-    if (estimate.card > 0) lines.push(`Credit card surcharge (3%): ${money.format(estimate.card)}`);
-    lines.push(`Estimated total: ${money.format(estimate.total)}`);
+    if (estimate.enquire) {
+      lines.push("Rates for non-Canadian institutions and non-profit organisations are");
+      lines.push("quoted individually, so no total is shown. Please price the work above.");
+    } else {
+      lines.push(`Subtotal: ${money.format(estimate.subtotal)}`);
+      if (estimate.rush > 0) lines.push(`Rush surcharge (40%): ${money.format(estimate.rush)}`);
+      if (estimate.card > 0) lines.push(`Credit card surcharge (3%): ${money.format(estimate.card)}`);
+      lines.push(`Estimated total: ${money.format(estimate.total)}`);
+    }
 
     if (estimate.combinable.length >= 2) {
       lines.push("");
       lines.push(`NOTE: ${estimate.combinable.join(", ")} are priced separately here. If they`);
       lines.push("run from the same dissolution, combined pricing is available on request.");
     }
+  }
+
+  if (state.quantities["upb-catims"] > 0
+      && (state.quantities["prep-minsep"] > 0 || state.quantities["upb-prep"] > 0)) {
+    lines.push("");
+    lines.push("NOTE: CA-TIMS already includes mineral separation and 40 screening spots.");
+    lines.push("Booking separation alongside it may double-charge for the same work.");
   }
 
   lines.push("");
@@ -1563,20 +2282,108 @@ function buildSummary() {
 }
 
 /* ============================================================================
+   The full fee schedule as a CSV
+
+   Built from CATALOGUE, so it cannot drift from what the estimator charges, and
+   stamped with SCHEDULE_REVISED so a stale copy is identifiable. All three
+   published rate columns appear; the enquiry tier has no rates to export.
+   ============================================================================ */
+
+function csvCell(value) {
+  const text = String(value == null ? "" : value);
+  return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text;
+}
+
+function buildRatesCsv() {
+  const rows = [
+    ["PCIGR fee schedule"],
+    ["Schedule revised", SCHEDULE_REVISED],
+    ["Exported", new Date().toLocaleDateString("en-CA")],
+    ["All amounts in Canadian dollars, exclusive of applicable taxes."],
+    [],
+    // "Radiogenic isotopes" is two categories, TIMS and MC-ICP-MS, holding some
+    // identically named analyses at identical prices. Without the instrument
+    // column those rows are indistinguishable in a spreadsheet.
+    ["Category", "Instrument", "Service", "Unit",
+     ...TIERS.filter(t => !t.enquire).map(t => t.name), "Notes"]
+  ];
+
+  CATALOGUE.forEach(category => {
+    category.items.forEach(item => {
+      rows.push([
+        category.name,
+        category.meta,
+        item.name,
+        item.unit,
+        ...item.rates.map(rate => rate.toFixed(2)),
+        [category.note, item.note].filter(Boolean).join(" ")
+      ]);
+    });
+  });
+
+  // A BOM so Excel opens the degree signs and deltas as UTF-8 rather than mojibake.
+  return "\ufeff" + rows.map(row => row.map(csvCell).join(",")).join("\r\n");
+}
+
+function downloadRatesCsv() {
+  const slug = SCHEDULE_REVISED.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+  const blob = new Blob([buildRatesCsv()], { type: "text/csv;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = `pcigr-fee-schedule-${slug}.csv`;
+  document.body.append(link);
+  link.click();
+  link.remove();
+  URL.revokeObjectURL(url);
+}
+
+/* ============================================================================
    Wiring
    ============================================================================ */
 
+function clearFacets() {
+  FACETS.forEach(facet => state.selections[facet.key].clear());
+  state.materialOther = "";
+  $("material-other").value = "";
+}
+
 function init() {
   buildTiers();
-  buildChipGroup("material-chips", MATERIALS, "material");
-  buildChipGroup("instrument-chips", INSTRUMENTS, "instrument");
+  FACETS.forEach(buildFacet);
   buildCatalogue();
+
+  // A priced item with no facet can never be reached through step two. That is
+  // legitimate for technician setup and a bug for anything else, so say so.
+  const unclassified = Array.from(ITEMS_BY_ID.keys())
+    .filter(id => !Object.prototype.hasOwnProperty.call(ANALYSIS_FACETS, id));
+  if (unclassified.length) {
+    console.warn("Fee estimator: items missing from ANALYSIS_FACETS:", unclassified.join(", "));
+  }
+
+  $("material-other").addEventListener("input", event => {
+    state.materialOther = event.target.value.trim();
+    renderHeader();
+  });
+
+  $("clear-filters").addEventListener("click", () => {
+    clearFacets();
+    render();
+  });
+
+  $("tier-badge").addEventListener("click", () => {
+    $("step-rate-section").scrollIntoView({ behavior: "smooth", block: "center" });
+    const first = $("tier-group").querySelector("input");
+    if (first) first.focus({ preventScroll: true });
+  });
 
   $("rush").addEventListener("change", event => { state.rush = event.target.checked; render(); });
   $("card").addEventListener("change", event => { state.card = event.target.checked; render(); });
   $("reference").addEventListener("input", renderHeader);
 
   $("print").addEventListener("click", () => window.print());
+
+  $("download-rates").addEventListener("click", downloadRatesCsv);
 
   $("copy").addEventListener("click", async event => {
     const button = event.currentTarget;
@@ -1585,7 +2392,7 @@ function init() {
       await navigator.clipboard.writeText(buildSummary());
       button.textContent = "Copied";
     } catch {
-      button.textContent = "Copy blocked — select the estimate instead";
+      button.textContent = "Copy blocked, select the estimate instead";
     }
     setTimeout(() => { button.textContent = original; }, 2200);
   });
@@ -1594,13 +2401,11 @@ function init() {
     state.quantities = Object.create(null);
     state.rush = false;
     state.card = false;
-    state.material = "all";
-    state.instrument = "all";
+    clearFacets();
     document.querySelectorAll(".item__qty").forEach(input => { input.value = ""; });
     $("rush").checked = false;
     $("card").checked = false;
     $("reference").value = "";
-    syncChips();
     render();
   });
 
