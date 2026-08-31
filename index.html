@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>PCIGR Fee Estimator</title>
+<title>PCIGR Analytical Services Estimator</title>
 <style>
 /* ============================================================
    Tokens
@@ -354,6 +354,15 @@ p { margin: 0; }
 }
 .chip[aria-pressed="true"] .chip__caret { color: var(--accent); }
 
+.chip__hint {
+  display: block;
+  font-size: 0.625rem;
+  color: var(--ink-3);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+}
+.chip[aria-pressed="true"] .chip__hint { color: var(--accent); }
+
 .chip__count {
   font-family: var(--font-data);
   font-size: 0.625rem;
@@ -393,6 +402,217 @@ p { margin: 0; }
   text-underline-offset: 2px;
   cursor: pointer;
 }
+
+/* ---- full schedule, and the download that may not be allowed to happen ---- */
+.handoff { margin-top: var(--s6); }
+
+.schedule {
+  margin-top: var(--s6);
+  padding-top: var(--s5);
+  border-top: 1px solid var(--rule-strong);
+}
+
+.schedule summary {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: baseline;
+  gap: var(--s2);
+}
+.schedule summary::-webkit-details-marker { display: none; }
+
+.schedule summary::before {
+  content: "\25b8";
+  font-size: 0.75rem;
+  color: var(--accent);
+  transition: transform 120ms ease;
+}
+.schedule details[open] summary::before { content: "\25be"; }
+
+.schedule summary:hover { color: var(--accent); }
+.schedule summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+
+.schedule__group { margin-top: var(--s5); }
+
+.schedule__head {
+  display: flex;
+  align-items: baseline;
+  gap: var(--s3);
+  border-bottom: 1px solid var(--rule-strong);
+  padding-bottom: var(--s1);
+  margin-bottom: var(--s2);
+}
+
+.schedule__name {
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.schedule__meta {
+  margin-left: auto;
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  white-space: nowrap;
+}
+
+.qa {
+  margin-top: var(--s6);
+  padding: var(--s4);
+  background: var(--surface-2);
+  border-left: 3px solid var(--accent);
+}
+.qa[hidden] { display: none; }
+
+.qa__rule {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: var(--s2);
+  font-size: 0.8125rem;
+  margin-top: var(--s2);
+}
+
+.qa__per {
+  font: inherit;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  width: 4rem;
+  padding: var(--s1) var(--s2);
+  text-align: right;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.qa__per:focus { border-color: var(--accent); }
+
+.qa__note { font-size: 0.75rem; color: var(--ink-2); margin-top: var(--s3); max-width: var(--measure); }
+
+.next-steps {
+  margin-top: var(--s5);
+  padding-top: var(--s4);
+  border-top: 1px solid var(--rule);
+}
+
+.next-steps__list {
+  margin: var(--s3) 0 0;
+  padding-left: var(--s4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--s2);
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+
+.next-steps__list li::marker {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.csv-fallback { margin-top: var(--s3); }
+.csv-fallback[hidden] { display: none; }
+
+.csv-fallback textarea {
+  font-family: var(--font-data);
+  font-size: 0.6875rem;
+  width: 100%;
+  min-height: 9rem;
+  padding: var(--s2);
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+  white-space: pre;
+}
+
+/* ---- per-instrument rate tables ---- */
+/* The table can outgrow a narrow column, so it scrolls inside itself rather
+   than pushing the page sideways. */
+.rates__scroll { overflow-x: auto; }
+
+.rate-table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 0.75rem;
+}
+
+.rate-table th,
+.rate-table td {
+  text-align: left;
+  padding: var(--s1) var(--s3) var(--s1) 0;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+}
+
+.rate-table th {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.rate-table td:first-child { white-space: normal; min-width: 12rem; }
+
+.rate-table td:last-child,
+.rate-table th:last-child {
+  text-align: right;
+  padding-right: 0;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.rate-table tr:last-child th,
+.rate-table tr:last-child td { border-bottom: 0; }
+
+/* ---- sample numbers ---- */
+.counts { display: flex; flex-direction: column; gap: var(--s2); margin-top: var(--s3); }
+.counts:empty { display: none; }
+
+.count-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 6rem;
+  align-items: center;
+  gap: var(--s3);
+  font-size: 0.8125rem;
+}
+.count-row[hidden] { display: none; }
+
+.count-row__input {
+  font: inherit;
+  font-family: var(--font-data);
+  font-variant-numeric: tabular-nums;
+  width: 100%;
+  padding: var(--s1) var(--s2);
+  text-align: right;
+  border: 1px solid var(--rule-strong);
+  background: var(--surface);
+  color: var(--ink);
+}
+.count-row__input:focus { border-color: var(--accent); }
+
+.count-total {
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+}
+.count-total[hidden] { display: none; }
+.count-total strong { font-family: var(--font-data); color: var(--ink); }
+
+/* An offered number is not being charged yet, so it reads as an invitation
+   rather than as the accent-coloured automatic figures beside it. */
+.item__offer {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--ink-2);
+  margin-top: 2px;
+}
+.item__offer[hidden] { display: none; }
 
 .other-field { margin-top: var(--s4); }
 .other-field[hidden] { display: none; }
@@ -590,6 +810,7 @@ p { margin: 0; }
 
 @media (max-width: 940px) {
   .estimate { position: static; }
+  .handoff__where { display: none; }
 }
 
 .estimate__head {
@@ -733,6 +954,36 @@ p { margin: 0; }
 }
 
 /* ============================================================
+   Embedded mode
+
+   Reached with ?embed=1, for iframing into a page that supplies its own
+   heading and chrome. Three things change:
+
+   1. The masthead title, eyebrow and instrument list go, since the host page
+      has already said where the reader is. The instructions stay: they are the
+      only thing telling anyone how the form works.
+   2. The theme toggle goes with them. The page still follows the viewer's
+      system theme, it just stops offering a control the host cannot style.
+   3. The estimate panel stops being sticky. Inside an iframe, sticky resolves
+      against the frame's own scroll container, so a frame tall enough that the
+      parent scrolls instead leaves the panel pinned to nothing.
+   ============================================================ */
+:root[data-embed] .masthead {
+  border-bottom: 0;
+  background: transparent;
+}
+
+:root[data-embed] .masthead__inner { padding: 0; }
+:root[data-embed] .masthead__title,
+:root[data-embed] .masthead .eyebrow,
+:root[data-embed] .instrument-bar,
+:root[data-embed] .theme-toggle { display: none; }
+
+:root[data-embed] .masthead__sub { margin-top: 0; }
+:root[data-embed] .shell { padding-left: 0; padding-right: 0; }
+:root[data-embed] .estimate { position: static; }
+
+/* ============================================================
    Print: the estimate panel becomes the printable sheet
    ============================================================ */
 .print-only { display: none; }
@@ -781,11 +1032,12 @@ p { margin: 0; }
   <div class="masthead__inner">
     <div>
       <p class="eyebrow">Pacific Centre for Isotopic and Geochemical Research</p>
-      <h1 class="masthead__title">Fee estimator</h1>
+      <h1 class="masthead__title">Analytical services estimator</h1>
       <p class="masthead__sub">
-        Build an indicative cost for analytical work at PCIGR. Work through samples, analysis and
-        instrument, enter your counts, and set the rate category at the end. The estimate
-        assembles as you go.
+        Build an indicative estimate and plan for analytical work at PCIGR. Choose your rate
+        category, select your samples and the analysis you need, and enter the number of samples
+        you would like us to process. Multiple choices are possible; leave fields blank if unsure.
+        The estimate assembles as you go, and more detail gives a more accurate estimate.
       </p>
       <div class="instrument-bar" aria-hidden="true">
         <span>HR-SF-ICP-MS</span><span>Q-ICP-MS</span><span>MC-ICP-MS</span>
@@ -802,9 +1054,38 @@ p { margin: 0; }
     <!-- ==================== Left: configuration ==================== -->
     <main>
       <!-- Step 1 ------------------------------------------------------------ -->
-      <section class="step" aria-labelledby="step-samples">
+      <!-- Every figure on the page is a figure at some rate, and the rate tables
+           in the instrument step fill in long before the pricing step is reached.
+           Asking last meant a non-academic visitor read academic numbers all the
+           way down, so the question comes first. -->
+      <section class="step" id="step-rate-section" aria-labelledby="step-rate">
         <div class="step__head">
           <span class="step__num">1</span>
+          <h2 class="step__title" id="step-rate">Rate category</h2>
+        </div>
+
+        <div id="rate-block">
+          <span class="field__label eyebrow" id="tier-label">Who is paying</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="tier-label" id="tier-group"></div>
+
+          <p class="field__hint">
+            <strong>If you are a student at a Canadian university, please choose NSERC / Canadian
+            academic.</strong>
+          </p>
+
+          <p class="field__hint">
+            Rate columns apply to Canadian-based researchers. Non-Canadian institutions and
+            non-profit organisations should choose <strong>Outside Canada / non-profit</strong>
+            above, or contact <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a> for a
+            quotation.
+          </p>
+        </div>
+      </section>
+
+      <!-- Step 2 ------------------------------------------------------------ -->
+      <section class="step" aria-labelledby="step-samples">
+        <div class="step__head">
+          <span class="step__num">2</span>
           <h2 class="step__title" id="step-samples">Samples</h2>
           <span class="step__aside">optional</span>
         </div>
@@ -814,6 +1095,8 @@ p { margin: 0; }
           browse the whole schedule.
         </p>
         <div class="groups" id="material-groups"></div>
+
+        <p class="count-total" id="count-total" hidden></p>
 
         <div class="other-field" id="material-other-field" hidden>
           <label class="field__label eyebrow" for="material-other">Describe the material</label>
@@ -826,79 +1109,124 @@ p { margin: 0; }
         </div>
       </section>
 
-      <!-- Step 2 ------------------------------------------------------------ -->
+      <!-- Step 3 ------------------------------------------------------------ -->
       <section class="step" aria-labelledby="step-analysis">
         <div class="step__head">
-          <span class="step__num">2</span>
+          <span class="step__num">3</span>
           <h2 class="step__title" id="step-analysis">Analysis</h2>
           <span class="step__aside">optional</span>
         </div>
         <p class="step__hint">
-          Choose what you need to know. The instrument is selected by the analysis required, so
-          the next step only offers instruments that can do this work.
+          Choose what you need to know rather than the technique. The instrument follows from it,
+          so there is nothing to pick: the services below are the ones that answer your question,
+          each on the instrument we would run it on. Contact us if you would rather use a different
+          set-up.
         </p>
         <div class="groups" id="analysis-groups"></div>
-      </section>
 
-      <!-- Step 3 ------------------------------------------------------------ -->
-      <section class="step" id="step-instrument-section" aria-labelledby="step-instrument">
-        <div class="step__head">
-          <span class="step__num">3</span>
-          <h2 class="step__title" id="step-instrument">Instrument</h2>
-          <span class="step__aside">optional</span>
+        <div class="other-field" id="trace-prereq" hidden>
+          <span class="field__label eyebrow" id="trace-label">Trace element data</span>
+          <p class="field__hint" style="margin-top:0;">
+            <strong>Trace element concentrations are required for accurate analyses.</strong>
+            If you do not already have them, we will measure them at your cost and they are
+            added below.
+          </p>
+          <div class="chips" role="group" aria-labelledby="trace-label" id="trace-choice">
+            <button type="button" class="chip" data-has="yes" aria-pressed="false">I have this data</button>
+            <button type="button" class="chip" data-has="no" aria-pressed="false">Please measure it</button>
+          </div>
         </div>
-        <p class="step__hint" id="instrument-hint">
-          Only instruments that can do the work above are offered. Where the instrument changes the
-          price, as with U-Pb by laser ablation against CA-TIMS, both appear as separate
-          priced lines in step four rather than as a choice here.
-        </p>
-        <div class="groups" id="instrument-groups"></div>
+
+        <div class="other-field" id="laser-field" hidden>
+          <span class="field__label eyebrow" id="laser-mount-label">Sample mount</span>
+          <div class="chips" role="group" aria-labelledby="laser-mount-label" id="laser-mounts"></div>
+
+          <div class="counts" id="laser-counts" hidden>
+            <div class="count-row">
+              <label for="laser-spots">Spots: number</label>
+              <input class="count-row__input" type="number" id="laser-spots" min="0" step="1" placeholder="0">
+            </div>
+            <div class="count-row">
+              <label for="laser-lines">Line scans: number</label>
+              <input class="count-row__input" type="number" id="laser-lines" min="0" step="1" placeholder="0">
+            </div>
+          </div>
+
+          <p class="field__hint">
+            Laser time is charged by the hour, so these numbers do not change the estimate. They
+            tell us how to plan the session.
+          </p>
+        </div>
+
+        <div class="other-field" id="prep-other-field" hidden>
+          <label class="field__label eyebrow" for="prep-other">Describe the preparation needed</label>
+          <input class="text-input" type="text" id="prep-other"
+                 placeholder="e.g. heavy liquid separation, column chemistry, ashing" autocomplete="off">
+        </div>
       </section>
 
       <!-- Step 4 ------------------------------------------------------------ -->
-      <section class="step catalogue" aria-labelledby="step-services">
+      <section class="step catalogue" id="step-pricing-section" aria-labelledby="step-pricing">
         <div class="step__head">
           <span class="step__num">4</span>
-          <h2 class="step__title" id="step-services">Services and quantities</h2>
+          <h2 class="step__title" id="step-pricing">Pricing</h2>
         </div>
+
         <p class="step__hint">
-          Enter sample counts or instrument hours. Anything you have entered a quantity for stays
-          visible even if it falls outside the choices above, so nothing is ever billed while hidden.
+          Enter the number of samples, or the instrument hours where work is sold by the hour.
+          Anything you have entered a number for stays visible even if it falls outside the choices
+          above, so nothing is ever billed while hidden.
         </p>
+
         <div id="catalogue"></div>
+
         <p class="callout" id="no-matches" hidden>
           Nothing in the schedule matches that combination. Widen or clear a choice above, or
           <button type="button" class="link-btn" id="clear-filters">show the full fee
           schedule</button>.
         </p>
-      </section>
 
-      <!-- Step 5 ------------------------------------------------------------ -->
-      <section class="step" id="step-rate-section" aria-labelledby="step-rate">
-        <div class="step__head">
-          <span class="step__num">5</span>
-          <h2 class="step__title" id="step-rate">Who is paying</h2>
-        </div>
-        <p class="step__hint">
-          Estimates are shown at the NSERC / Canadian academic rate until you change this.
-        </p>
+        <div class="qa no-print" id="qa-block" hidden>
+          <span class="field__label eyebrow" style="margin-bottom:0;">QA/QC duplicates</span>
 
-        <div>
-          <span class="field__label eyebrow" id="tier-label">Rate category</span>
-          <div class="segmented" role="radiogroup" aria-labelledby="tier-label" id="tier-group"></div>
-          <p class="field__hint">
-            Rate columns apply to Canadian-based researchers. Non-Canadian institutions and
-            non-profit organisations should contact
-            <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a> for a quotation.
+          <div class="qa__rule">
+            <label for="qa-per">One duplicate per</label>
+            <input class="qa__per" type="number" id="qa-per" min="1" step="1" value="8">
+            <span>samples of radiogenic isotope ratio work, at your cost.</span>
+          </div>
+
+          <label class="check" style="margin-top:var(--s3);">
+            <input type="checkbox" id="qa-off">
+            <span>Leave duplicates out of this estimate
+              <small>Duplicates are required, so this total would be below the actual cost.</small></span>
+          </label>
+
+          <p class="qa__note">
+            We select a reference material of comparable composition for every batch. There is no
+            charge for it, so it does not appear below.
           </p>
         </div>
 
-        <div style="margin-top:var(--s5);">
+        <div style="margin-top:var(--s6);">
           <label class="field__label eyebrow" for="reference">Project or client reference <span style="text-transform:none;letter-spacing:0;font-weight:400;">(appears on the printed estimate)</span></label>
           <input class="text-input" type="text" id="reference" placeholder="e.g. Smith, Cordilleran detrital zircon suite" autocomplete="off">
         </div>
       </section>
 
+      <p class="callout callout--info handoff no-print" id="handoff">
+        Your fee estimate assembles in <strong>Cost summary</strong><span class="handoff__where">
+        on the right</span> as you go. When it looks right, <strong>Save as PDF</strong> gives you
+        a printable copy and <strong>Copy summary</strong> gives you plain text to paste into an
+        email to us.
+      </p>
+
+      <section class="schedule no-print" id="full-schedule">
+        <details>
+          <summary>Full fee schedule</summary>
+          <p class="step__hint" style="margin-top:var(--s3);" id="schedule-note"></p>
+          <div id="schedule-tables"></div>
+        </details>
+      </section>
     </main>
 
     <!-- ==================== Right: live estimate ==================== -->
@@ -921,7 +1249,7 @@ p { margin: 0; }
       <p class="callout callout--info" id="enquire-notice" hidden>
         Rates for non-Canadian institutions and non-profit organisations are quoted individually,
         so no total is shown. Copy the summary below and send it to
-        <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a>, and PCIGR will price the work.
+        <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a>, and we will price the work.
       </p>
 
       <div class="surcharges no-print" id="surcharges">
@@ -935,12 +1263,10 @@ p { margin: 0; }
         </label>
       </div>
 
-      <p class="callout callout--info" id="combined-notice" hidden></p>
-
       <p class="callout" id="catims-warning" hidden>
         The U-Pb CA-TIMS price already includes mineral separation and 40 screening spots. Booking
         separation or sample preparation alongside it will usually double-charge for the same work.
-        Check with PCIGR before relying on this figure.
+        Check with us before relying on this figure.
       </p>
 
       <p class="callout" id="card-warning" hidden>
@@ -955,9 +1281,29 @@ p { margin: 0; }
         <button type="button" class="btn" id="reset">Reset</button>
       </div>
 
+      <div class="csv-fallback no-print" id="csv-fallback" hidden>
+        <p class="field__hint" id="csv-fallback-note"></p>
+        <textarea id="csv-text" readonly aria-label="Fee schedule as CSV text"></textarea>
+      </div>
+
+      <div class="next-steps no-print">
+        <p class="eyebrow">What happens next</p>
+        <ol class="next-steps__list">
+          <li>Save or copy your estimate above.</li>
+          <li>Email it to <a href="mailto:pcigr@eoas.ubc.ca">pcigr@eoas.ubc.ca</a> with your
+              sample list, rock types, and any trace element data you already have.</li>
+          <li>We will confirm what we can run, the turnaround, and the final cost.</li>
+        </ol>
+      </div>
+
       <div class="disclaimer">
         <p><strong>This is an estimate, not a quotation.</strong> Prices are subject to change
-        without notice; confirm all costs with PCIGR before committing funds.</p>
+        without notice; confirm all costs with us before committing funds.</p>
+        <p><strong>We are a research facility, not a commercial laboratory.</strong> Some
+        materials cannot be run here, among them highly mineralised rock compositions, metals and
+        organics, and work may be declined. Please ask before planning around an estimate.</p>
+        <p><strong>Rates apply to Canadian requests.</strong> Non-Canadian institutions and
+        non-profits are quoted individually.</p>
         <p>All amounts in Canadian dollars, exclusive of applicable local and federal taxes.</p>
         <p>Instrument setup allowances of 1.5 h (solution) and 2 h (laser) are standard per
         24-hour interval; additional time is charged at gas rates.</p>
@@ -1011,16 +1357,17 @@ const MATERIAL_GROUPS = [
     { id: "powder", name: "Powder",                          tags: ["rock"] },
     { id: "chip",   name: "Chips or grains",                 tags: ["rock"] },
     { id: "ore",    name: "Ore & massive sulfide",           tags: ["sulfide", "rock"] },
-    { id: "synth",  name: "Experimental or synthetic solid", tags: ["rock"], enquire: true }
+    { id: "synth",  name: "Experimental or synthetic solid", tags: ["rock"] }
   ]},
 
   { id: "mineral", name: "Minerals", tags: ["zircon", "garnet", "carbonate", "sulfide", "feldspar"], options: [
     { id: "zircon",    name: "Zircon",        tags: ["zircon"] },
     { id: "garnet",    name: "Garnet",        tags: ["garnet"] },
-    { id: "apatite",   name: "Apatite",       tags: ["garnet"] },
+    { id: "apatite",   name: "Apatite",       tags: ["garnet", "zircon"] },
+    { id: "baddeleyite", name: "Baddeleyite", tags: ["zircon"] },
+    { id: "monazite",  name: "Monazite",      tags: ["zircon"] },
     { id: "carbonate", name: "Carbonate",     tags: ["carbonate"] },
     { id: "feldspar",  name: "Feldspar",      tags: ["feldspar"] },
-    { id: "galena",    name: "Galena",        tags: ["sulfide"] },
     { id: "sulfide",   name: "Other sulfide", tags: ["sulfide"] },
     { id: "others",    name: "Others",        tags: [] }
   ]},
@@ -1028,7 +1375,7 @@ const MATERIAL_GROUPS = [
   { id: "solution", name: "Solutions", tags: ["water"], options: [
     { id: "fresh", name: "Natural fresh water",  tags: ["water"] },
     { id: "sea",   name: "Seawater",             tags: ["water"] },
-    { id: "brine", name: "Brine",                tags: ["water"], enquire: true },
+    { id: "brine", name: "Brine",                tags: ["water"] },
     { id: "lab",   name: "Laboratory solution",  tags: ["water"] }
   ]},
 
@@ -1045,29 +1392,35 @@ const MATERIAL_GROUPS = [
   { id: "other", name: "Other (specify)", tags: [], other: true, options: [] }
 ];
 
+/* The line between major and trace is a matter of the dilution needed rather
+   than a fixed definition, so it lives here as one number and can be moved. */
+const CONCENTRATION_THRESHOLD_PPM = 100;
+
 /** What the visitor wants to know. Option ids join their group as "group:option". */
 const ANALYSES = [
-  { id: "elemental", name: "Element concentrations", hint: "How much of each element is present",
-    note: "Major elements are run on the Agilent quadrupole (single or triple quad) and charged "
-        + "by the hour. Trace elements can be either a per-sample package or booked instrument time.",
+  { id: "elemental", name: "Elemental concentrations", hint: "How much of each element is present",
     options: [
-      { id: "trace",  name: "Trace elements" },
-      { id: "major",  name: "Major elements", enquire: true },
+      { id: "major",  name: `Major elements (>${CONCENTRATION_THRESHOLD_PPM} ppm)` },
+      { id: "trace",  name: `Trace elements (<${CONCENTRATION_THRESHOLD_PPM} ppm)` },
       { id: "insitu", name: "In situ (laser ablation)" }
     ]},
 
-  { id: "stable", name: "Light stable isotopes", hint: "δ¹³C, δ¹⁵N, δ¹⁸O",
+  { id: "stable", name: "Light stable isotope ratios", hint: "δ¹³C, δ¹⁵N, δ¹⁸O",
     options: [
       { id: "cn", name: "δ¹⁵N, δ¹³C: solids" },
       { id: "co", name: "δ¹³C, δ¹⁸O: carbonates" }
     ]},
 
-  { id: "radiogenic", name: "Radiogenic isotope ratios", hint: "Provenance and tracing: ratios, not ages",
+  // Naming the actual ratios is the cheapest way to stop somebody arriving here
+  // when they wanted light stable isotopes, and to head off the confusion between
+  // 143Nd/144Nd and 142Nd/144Nd.
+  { id: "radiogenic", name: "Radiogenic isotope ratios", hint: "Sr, Nd, Hf and Pb isotope ratios",
+    caution: "Please note: for provenance and tracing, not age determination.",
     options: [
-      { id: "sr", name: "Sr" },
-      { id: "nd", name: "Nd" },
-      { id: "hf", name: "Hf" },
-      { id: "pb", name: "Pb" }
+      { id: "sr", name: "\u2078\u2077Sr/\u2078\u2076Sr" },
+      { id: "nd", name: "\u00b9\u2074\u00b3Nd/\u00b9\u2074\u2074Nd" },
+      { id: "hf", name: "\u00b9\u2077\u2076Hf/\u00b9\u2077\u2077Hf" },
+      { id: "pb", name: "Pb", hint: "²⁰⁴Pb, ²⁰⁶Pb, ²⁰⁷Pb, ²⁰⁸Pb" }
     ]},
 
   { id: "geochron", name: "Geochronology (dating)", hint: "Ages: U-Pb and Lu-Hf",
@@ -1076,26 +1429,28 @@ const ANALYSES = [
       { id: "luhf", name: "Lu-Hf" }
     ]},
 
-  { id: "prep", name: "Sample preparation", hint: "Crushing, separation, dissolution and wet chemistry",
+  { id: "prep", name: "Sample preparation",
+    hint: "Do your samples need preparation such as mineral separation or dissolution?",
+    note: "Rock specimens need mineral separation for U-Pb dating. For ICP-MS analyses, samples "
+        + "need to be in solution form. Some analytical packages include sample preparation "
+        + "already, and those are priced as a single line rather than added together.",
     options: [
       { id: "crush",       name: "Crushing" },
       { id: "minsep",      name: "Mineral separation" },
       { id: "dissolution", name: "Dissolution" },
-      { id: "wetchem",     name: "Wet chemistry & leaching" }
+      { id: "wetchem",     name: "Wet chemistry & leaching" },
+      { id: "other",       name: "Other (specify)", other: true }
     ]}
 ];
 
-/** Instruments, condensed. `instruments` are catalogue instrument ids. */
-const INSTRUMENT_GROUPS = [
-  { id: "icpms", name: "ICP-MS", instruments: ["hrsf", "quad", "mc", "la"], options: [
-    { id: "hrsf", name: "HR-SF (Element 2 / AttoM)", instruments: ["hrsf"] },
-    { id: "quad", name: "Quadrupole (single & triple)", instruments: ["quad"] },
-    { id: "mc",   name: "Multicollector",            instruments: ["mc"] },
-    { id: "la",   name: "Laser ablation",            instruments: ["la"] }
-  ]},
-  { id: "tims", name: "TIMS",             instruments: ["tims"], options: [] },
-  { id: "irms", name: "IRMS",             instruments: ["irms"], options: [] },
-  { id: "prep", name: "Preparation lab",  instruments: ["prep"], options: [] }
+/* Laser sessions are planned around what the sample is mounted on and how many
+   analyses are wanted. None of it changes the estimate, because laser time is
+   sold by the hour: it is here so the request arrives ready to schedule.
+   Dimensions are as supplied by PCIGR and worth confirming. */
+const LASER_MOUNTS = [
+  { id: "section",   name: "Thick or thin sections", detail: "12.5 cm wide" },
+  { id: "puck",      name: "Pucks",                  detail: "2.5 cm diameter" },
+  { id: "irregular", name: "Irregular",              detail: "up to 10 × 15 cm" }
 ];
 
 /* ----------------------------------------------------------------------------
@@ -1117,6 +1472,9 @@ const ANALYSIS_FACETS = {
   "elem-quad":   ["elemental:trace", "elemental:major"],
   "elem-trace":  ["elemental:trace"],
   "elem-laser":  ["elemental:insitu", "elemental:trace"],
+  // One laser, two mass spectrometers: Pb isotope ratios and trace elements
+  // from the same ablation.
+  "elem-split":  ["elemental:insitu", "elemental:trace", "radiogenic:pb"],
 
   "irms-cn":     ["stable:cn"],
   "irms-carb":   ["stable:co"],
@@ -1124,17 +1482,12 @@ const ANALYSIS_FACETS = {
   "irms-tech":   ["stable:cn", "stable:co", "prep:wetchem"],
 
   "tims-sr":     ["radiogenic:sr"],
-  "tims-nd":     ["radiogenic:nd"],
-  "tims-pb-gal": ["radiogenic:pb"],
-  "tims-pb-fsp": ["radiogenic:pb"],
 
   "mc-nd":       ["radiogenic:nd"],
   "mc-hf":       ["radiogenic:hf"],
-  "mc-hf-conc":  ["radiogenic:hf"],
   "mc-hf-zrn":   ["radiogenic:hf"],
   "mc-pb":       ["radiogenic:pb"],
 
-  "upb-prep":    ["geochron:upb", "prep:minsep"],
   "upb-catims":  ["geochron:upb"],
   "upb-la-det":  ["geochron:upb"],
   "upb-la-ign":  ["geochron:upb"],
@@ -1150,10 +1503,25 @@ const ANALYSIS_FACETS = {
 /** Facet groups, in the order they are asked. */
 const FACETS = [
   { key: "material",   groups: MATERIAL_GROUPS,   containerId: "material-groups" },
-  { key: "analysis",   groups: ANALYSES,          containerId: "analysis-groups" },
-  { key: "instrument", groups: INSTRUMENT_GROUPS, containerId: "instrument-groups" }
+  { key: "analysis",   groups: ANALYSES,          containerId: "analysis-groups" }
 ];
 
+/* @rates:begin
+   Everything between this marker and its closing pair below is the published fee
+   schedule, and update_rates.py rewrites rate arrays inside it and nowhere else.
+   Each marker must appear exactly once in this file, so do not quote them in
+   prose: the importer finds them with a plain search.
+
+   The fence matters because a `rates` key is not unique to the fee schedule by
+   nature. COMBINATIONS used to carry one and was the original reason for the
+   boundary; it has since been removed, but the next array like it would be a
+   silent corruption rather than an error, so the boundary stays.
+
+   The importer keys on each item's `id`, not on line numbers or ordering, so
+   this block can be reordered, reformatted, extended or rewritten freely. The
+   one thing that breaks it is renaming an id, which already breaks
+   ANALYSIS_FACETS, SETUP_RULES, THROUGHPUT and SAME_DISSOLUTION, so it is not a
+   new hazard. */
 const CATALOGUE = [
   {
     name: "Technician time",
@@ -1165,19 +1533,19 @@ const CATALOGUE = [
     ]
   },
   {
-    name: "Elemental concentration",
+    name: "Elemental concentrations",
     meta: "HR-SF-ICP-MS · Q-ICP-MS",
-    note: "PCIGR reserves the right to add a fee for rock samples needing extensive extra work in preparation and analysis. Organic materials and waters may be charged per hour for both preparation and analysis rather than per sample.",
+    note: "We reserve the right to add a fee for rock samples needing extensive extra work in preparation and analysis. Organic materials and waters may be charged per hour for both preparation and analysis rather than per sample.",
     items: [
       { id: "elem-hr", name: "Element 2 / AttoM HR-SF-ICP-MS", unit: "hour", rates: [75, 115, 150],
         tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet"], instruments: ["hrsf"],
         caution: true,
-        note: "Special sample introduction systems such as Aridus carry additional charges. Contact PCIGR for availability." },
+        note: "Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-quad", name: "Agilent 7700x / 8900 quadrupole ICP-MS", unit: "hour", rates: [65, 100, 130],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["quad"],
         caution: true,
-        note: "Special sample introduction systems such as Aridus carry additional charges. Contact PCIGR for availability." },
+        note: "Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["hrsf","quad"],
@@ -1186,11 +1554,20 @@ const CATALOGUE = [
 
       { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
         tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"],
-        note: "Contact PCIGR for a daily rate, or for a per-spot rate for quoting." }
+        note: "Contact us for a daily rate, or for a per-spot rate." },
+
+      // Sulfide is deliberately absent. This line now answers Pb isotope ratios as
+      // well as trace elements, and Pb ratios are not offered on sulfides; tags
+      // apply to a whole line rather than to one of its facets, so the only way
+      // to keep that promise is to drop the tag. Trace element work on sulfides
+      // is still reachable through ordinary laser ablation.
+      { id: "elem-split", name: "Split-stream between 2 ICP-MS", unit: "hour", rates: [135, 200, 270],
+        tags: ["rock","zircon","garnet","carbonate"], instruments: ["la"],
+        note: "One laser, two mass spectrometers, so Pb isotope ratios and trace element data come from the same ablation." }
     ]
   },
   {
-    name: "Light stable isotopes",
+    name: "Light stable isotope ratios",
     meta: "IRMS",
     note: "Waters, H/D materials and artificially enriched isotope samples cannot be analysed. Samples that shorten EA column life (those with salt content or acid residue) attract an added cost on top of the analysis fee. Contact Dr. Kendra Chritz (kendra.chritz@ubc.ca) about high-volume projects or organic soils.",
     items: [
@@ -1201,26 +1578,26 @@ const CATALOGUE = [
     ]
   },
   {
-    name: "Radiogenic isotopes",
+    name: "Radiogenic isotope ratios",
     meta: "TIMS",
-    note: "Extra fees apply for mineral separation where needed. Add it under Sample preparation. Contact PCIGR for pricing on combined isotopic analyses from the same dissolution, which is cheaper than ordering them separately.",
+    note: "Extra fees apply for mineral separation where needed. Add it under Sample preparation. Isotope ratios run from the same dissolution are rebated automatically below.",
     items: [
-      { id: "tims-sr",      name: "Sr isotopic analysis",              unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate"], instruments: ["tims"] },
-      { id: "tims-nd",      name: "Nd isotopic analysis",              unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["tims"] },
-      { id: "tims-pb-gal",  name: "Pb isotopes: galena",              unit: "sample", rates: [100, 150, 200], tags: ["sulfide"], instruments: ["tims"] },
-      { id: "tims-pb-fsp",  name: "Pb isotopes: feldspar / sulfide", unit: "sample", rates: [200, 300, 400], tags: ["rock","sulfide","feldspar"], instruments: ["tims"] }
+      { id: "tims-sr",      name: "Sr isotope ratios (⁸⁷Sr/⁸⁶Sr)",      unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate"], instruments: ["tims"] }
     ]
   },
   {
-    name: "Radiogenic isotopes",
+    name: "Radiogenic isotope ratios",
     meta: "MC-ICP-MS",
-    note: "Contact PCIGR for pricing on combined isotopic analyses from the same dissolution.",
+    note: "Pb, Sr, Nd and Hf run in sequence from one dissolution. Ordering two or more together is rebated automatically below.",
     items: [
-      { id: "mc-nd",      name: "Nd isotopic analysis",                    unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["mc"] },
-      { id: "mc-hf",      name: "Hf isotopic analysis",                    unit: "sample", rates: [310, 465, 620], tags: ["rock","zircon"], instruments: ["mc"] },
-      { id: "mc-hf-conc", name: "Hf isotopic analysis + Lu-Hf concentration", unit: "sample", rates: [350, 525, 700], tags: ["rock","zircon","garnet"], instruments: ["mc"] },
-      { id: "mc-hf-zrn",  name: "Zircon Hf isotopic analysis",             unit: "sample", rates: [210, 315, 420], tags: ["zircon"], instruments: ["mc","la"] },
-      { id: "mc-pb",      name: "Pb isotopic analysis",                    unit: "sample", rates: [200, 300, 400], tags: ["rock","sulfide","water"], instruments: ["mc"] }
+      // Whole rock, in the order the column chemistry runs them.
+      { id: "mc-nd",      name: "Nd isotope ratios (¹⁴³Nd/¹⁴⁴Nd)",         unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["mc"] },
+      { id: "mc-hf",      name: "Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",         unit: "sample", rates: [310, 465, 620], tags: ["rock","zircon"], instruments: ["mc"] },
+      { id: "mc-pb",      name: "Pb isotope ratios (²⁰⁴Pb, ²⁰⁶Pb, ²⁰⁷Pb, ²⁰⁸Pb)", unit: "sample", rates: [200, 300, 400], tags: ["rock","water","feldspar"], instruments: ["mc"],
+        note: "204Pb is measured on every sample and is required for whole-rock and mineral radiogenic work. It is not measured on the AttoM or the quadrupole, which give Pb concentrations rather than ratios." },
+
+      // On a mineral separate rather than whole rock.
+      { id: "mc-hf-zrn",  name: "Zircon Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",  unit: "sample", rates: [210, 315, 420], tags: ["zircon"], instruments: ["mc","la"] }
     ]
   },
   {
@@ -1228,15 +1605,10 @@ const CATALOGUE = [
     meta: "CA-TIMS · LA-ICP-MS",
     note: "Contact pcigr-upb-geochron@pcigr.ubc.ca for pricing on any combination of laser ablation and ID-TIMS geochronology.",
     items: [
-      { id: "upb-prep", name: "Sample preparation", unit: "sample", rates: [350, 525, 700],
-        tags: ["rock","zircon"], instruments: ["prep"],
-        caution: true,
-        note: "Charged even if no zircon is recovered." },
-
       { id: "upb-catims", name: "U-Pb CA-TIMS", unit: "sample", rates: [2100, 3150, 4200],
         tags: ["zircon","rock"], instruments: ["tims"],
         caution: true,
-        note: "A typical per-sample cost already includes mineral separation, 40 LA-ICP-MS spots to select grains for chemical abrasion, and 5 CA-TIMS fractions. Do not add those separately. Additional grains or fractions from the same separate are charged extra. Turnaround is 6–8 months for five samples or fewer, or 3–4 months with rush status; contact PCIGR for turnaround on larger submissions." },
+        note: "A typical per-sample cost already includes mineral separation, 40 LA-ICP-MS spots to select grains for chemical abrasion, and 5 CA-TIMS fractions. Do not add those separately. Additional grains or fractions from the same separate are charged extra. Turnaround is 6–8 months for five samples or fewer, or 3–4 months with rush status; contact us for turnaround on larger submissions." },
 
       { id: "upb-la-det", name: "U-Pb laser ablation: detrital", unit: "sample", rates: [1200, 1800, 2400],
         tags: ["zircon","rock"], instruments: ["la"],
@@ -1253,22 +1625,28 @@ const CATALOGUE = [
     items: [
       { id: "luhf-grt", name: "Garnet, apatite: ID-MC-ICP-MS", unit: "sample", rates: [2250, 3400, 4500],
         tags: ["garnet","rock"], instruments: ["mc"],
-        note: "Contact Prof. Matthijs Smit with questions about Lu-Hf geochronology." }
+        note: "Contact Dr. Matthijs Smit with questions about Lu-Hf geochronology." }
     ]
   },
   {
     name: "Sample preparation",
     meta: "Wet chemistry & mineral separation",
-    note: "Available only for samples subsequently analysed at PCIGR.",
+    note: "Available only for samples we go on to analyse.",
     items: [
       { id: "prep-crush",   name: "Rock crushing",                              unit: "sample", rates: [180, 270, 360], tags: ["rock","zircon","sulfide","garnet"], instruments: ["prep"] },
-      { id: "prep-leach",   name: "Leaching for radiogenic isotope analysis",   unit: "sample", rates: [105, 160, 220], tags: ["rock","carbonate","sulfide"], instruments: ["prep"] },
-      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock","zircon","garnet"], instruments: ["prep"] },
+      { id: "prep-leach",   name: "Leaching for radiogenic isotope ratios",     unit: "sample", rates: [105, 160, 220], tags: ["rock","carbonate"], instruments: ["prep"],
+        note: "Oceanic basalts require leaching. Contact us if unaltered isotope ratios matter to your study." },
+      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock","zircon","garnet"], instruments: ["prep"],
+        note: "Needed above about 60% SiO2, and at lower silica where accessory minerals such as zircon, apatite or monazite are present." },
       { id: "prep-micro",   name: "Microwave dissolution",                      unit: "sample", rates: [30, 45, 60],    tags: ["rock","carbonate","organic","sulfide"], instruments: ["prep"] },
-      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["rock","zircon","garnet"], instruments: ["prep"] }
+      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["rock","zircon","garnet"], instruments: ["prep"],
+        caution: true,
+        note: "Charged even if no zircon is recovered." }
     ]
   }
 ];
+
+/* @rates:end */
 
 const RUSH_RATE = 0.40;
 const CARD_RATE = 0.03;
@@ -1288,30 +1666,66 @@ const CARD_CEILING = 10000;
    automatic figure is withdrawn, so a manually entered setup is never doubled.
    ---------------------------------------------------------------------------- */
 
+/**
+ * Chemical separation runs one dissolution through column chemistry in sequence,
+ * Pb then Sr then Nd then Hf, which is why these can be combined and why the
+ * result is a purer solution than running them apart.
+ *
+ * Pb by TIMS and the Lu-Hf concentration line were withdrawn on 31 August 2026,
+ * so what remains is the whole-rock sequence itself.
+ */
+const SAME_DISSOLUTION = ["mc-pb", "tims-sr", "mc-nd", "mc-hf"];
+
+/**
+ * Rebate for running two or more of that sequence on one dissolution, applied to
+ * each qualifying line.
+ *
+ * 10% confirmed by PCIGR on 31 August 2026, superseding an earlier worked
+ * example that showed 20% off the four-way sum. At 10% the four analyses come
+ * to $927 at the academic rate rather than the $825 that example gave.
+ */
+const DISSOLUTION_REBATE = 0.10;
+
+/**
+ * QA/QC. PCIGR chooses a reference material of comparable composition for every
+ * batch and covers that cost itself; the user pays for one duplicate per this
+ * many samples. Stated as "one per 8 to 10"; the more frequent end is used so an
+ * estimate is never short.
+ */
+const QA_DUPLICATE_PER = 8;
+
+/**
+ * U-Pb lines whose price does not already cover mineral separation.
+ *
+ * CA-TIMS is deliberately absent: its per-sample price already includes
+ * separation, 40 laser screening spots and 5 fractions, so adding separation
+ * beside it would charge twice for the same work. That is what the CA-TIMS
+ * caution warns about when somebody books it by hand.
+ */
+const SEPARATION_BEFORE_UPB = ["upb-la-det", "upb-la-ign"];
+
+/** Every line that answers a radiogenic isotope ratio question. */
+const radiogenicLines = () => Object.keys(ANALYSIS_FACETS)
+  .filter(id => (ANALYSIS_FACETS[id] || []).some(f => f.startsWith("radiogenic:")));
+
 /* ----------------------------------------------------------------------------
-   Combined-analysis pricing.
+   Samples per instrument hour, for the four lines the schedule sells by the
+   hour rather than by the sample.
 
-   PCIGR quotes analyses sharing a single dissolution below the sum of their
-   individual prices, but does not publish those figures. The fees page says
-   to contact the centre. Rather than infer a discount policy, this is a plain
-   lookup table: add a row per package PCIGR actually offers, with its agreed
-   rates as [NSERC/academic, Canadian government, industry].
+   Deliberately empty. PCIGR has never published a throughput figure, and an
+   invented one would put a wrong number in front of a client while looking
+   authoritative. While a row is absent its hours stay hand-entered, exactly as
+   before. Fill one in and that instrument derives its hours from the sample
+   numbers entered in the samples step, as the setup allowance derives from hours.
 
-   A row with `rates: null` is treated as "price on application": the
-   estimator prices the analyses individually and flags that a combined
-   quotation is available. Fill in the rates and it applies them automatically
-   in place of the individual lines, for as many samples as carry the whole set.
+   A lookup table that does nothing until PCIGR supplies real figures.
    ---------------------------------------------------------------------------- */
-
-const COMBINATIONS = [
-  // { id: "sr-nd", name: "Sr + Nd (same dissolution)", members: ["tims-sr", "tims-nd"], rates: [400, 600, 800] },
-];
-
-/** Per-sample analyses that can share one dissolution, so may be quoted together. */
-const SAME_DISSOLUTION = [
-  "tims-sr", "tims-nd", "tims-pb-gal", "tims-pb-fsp",
-  "mc-nd", "mc-hf", "mc-hf-conc", "mc-pb"
-];
+const THROUGHPUT = {
+  // "elem-hr":    { samplesPerHour: 4 },
+  // "elem-quad":  { samplesPerHour: 6 },
+  // "elem-laser": { samplesPerHour: 3 },
+  // "irms-tech":  { samplesPerHour: 8 },
+};
 
 const INTERVAL_HOURS = 24;
 
@@ -1333,12 +1747,27 @@ const state = {
      Entry with option ids -> only those options.
      An empty Map means the facet constrains nothing. */
   selections: {
-    material:   new Map(),
-    analysis:   new Map(),
-    instrument: new Map()
+    material: new Map(),
+    analysis: new Map()
   },
 
   materialOther: "",
+  prepOther: "",
+
+  /* Number of samples per selected material leaf, keyed "group" for a whole
+     group or "group:option" for one narrowed within it. */
+  sampleCounts: Object.create(null),
+
+  /* Laser session detail. Captured for planning, never priced. */
+  laser: { mount: null, spots: 0, lines: 0 },
+
+  /* null until asked. false means PCIGR runs the trace elements at the user's cost. */
+  hasTraceData: null,
+
+  /* QA/QC. The rule is PCIGR's, but an estimate is allowed to model a different
+     batch size, or to leave duplicates out while somebody looks at the rest. */
+  qaPer: QA_DUPLICATE_PER,
+  qaOff: false,
   quantities: Object.create(null),
   rush: false,
   card: false
@@ -1352,6 +1781,30 @@ const money = new Intl.NumberFormat("en-CA", {
 });
 
 const $ = id => document.getElementById(id);
+
+/* An address in a note should be clickable like every other address on the page.
+   Notes are plain strings rather than markup, deliberately: nothing in the fee
+   schedule should be able to inject HTML. So the text is split on addresses and
+   the anchors are built as nodes, which keeps that property. */
+const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g;
+
+function withMailLinks(text) {
+  const out = document.createDocumentFragment();
+  let at = 0;
+
+  String(text).replace(EMAIL_RE, (address, index) => {
+    if (index > at) out.append(String(text).slice(at, index));
+    const link = document.createElement("a");
+    link.href = `mailto:${address}`;
+    link.textContent = address;
+    out.append(link);
+    at = index + address.length;
+    return address;
+  });
+
+  if (at < String(text).length) out.append(String(text).slice(at));
+  return out;
+}
 
 /* ============================================================================
    Build the interface
@@ -1391,6 +1844,112 @@ function buildTiers() {
 
 const facetByKey = key => FACETS.find(facet => facet.key === key);
 
+/* ---------------------------------------------------------------------------
+   Sample numbers, entered once with the samples and pushed down into the priced
+   lines rather than typed again against each of them.
+
+   A "leaf" is whatever the visitor actually settled on: a whole group when they
+   stopped at the parent chip, or each sub-option when they narrowed further.
+   --------------------------------------------------------------------------- */
+
+function materialLeaves() {
+  const leaves = [];
+
+  MATERIAL_GROUPS.forEach(group => {
+    const chosen = state.selections.material.get(group.id);
+    if (!chosen) return;
+
+    if (chosen.size === 0) {
+      leaves.push({ key: group.id, name: group.name, tags: group.tags, group });
+      return;
+    }
+    group.options
+      .filter(option => chosen.has(option.id))
+      .forEach(option => leaves.push({
+        key: `${group.id}:${option.id}`, name: option.name, tags: option.tags, group
+      }));
+  });
+
+  return leaves;
+}
+
+/** Do this leaf's samples reach this priced line? Empty tags reach everything. */
+function leafReaches(leaf, item) {
+  return leaf.tags.length === 0 || leaf.tags.some(tag => item.tags.includes(tag));
+}
+
+/** How many samples entered in the samples step could go to this line. */
+function samplesFor(item) {
+  return materialLeaves().reduce((sum, leaf) => {
+    const n = state.sampleCounts[leaf.key] || 0;
+    return sum + (leafReaches(leaf, item) ? n : 0);
+  }, 0);
+}
+
+/** Total entered, for the summary and the running figure in the samples step. */
+function totalSamples() {
+  return materialLeaves().reduce((sum, leaf) => sum + (state.sampleCounts[leaf.key] || 0), 0);
+}
+
+/** The analysis group a line belongs to, taken from the first facet it carries. */
+function primaryAnalysisGroup(itemId) {
+  const first = (ANALYSIS_FACETS[itemId] || [])[0];
+  return first ? first.split(":")[0] : null;
+}
+
+/**
+ * Sample numbers only fill a line in automatically when there is no doubt about
+ * where they should go: an analysis has been chosen, and this is the only line
+ * within its analysis group that survives the choices made. Where several lines
+ * compete, filling them all would charge three times for one set of samples, so
+ * each offers its number instead and waits to be asked.
+ */
+function soleLineInGroup(itemId) {
+  const group = primaryAnalysisGroup(itemId);
+  if (!group) return false;
+
+  const rivals = Array.from(ITEMS_BY_ID.keys()).filter(id =>
+    id !== itemId
+    && primaryAnalysisGroup(id) === group
+    && matchesFilters(id));
+
+  return rivals.length === 0;
+}
+
+/** Quantity implied by the sample numbers, or null when nothing should be assumed. */
+function derivedFromSamples(itemId) {
+  // Nothing is assumed until the visitor has said what they want done.
+  if (state.selections.analysis.size === 0) return null;
+  if (!matchesFilters(itemId)) return null;
+
+  const entry = ITEMS_BY_ID.get(itemId);
+  if (!entry) return null;
+
+  const samples = samplesFor(entry.item);
+  if (samples <= 0) return null;
+
+  const offer = { kind: "samples", samples, quantity: samples, unit: entry.item.unit };
+
+  if (entry.item.unit === "hour") {
+    const rule = THROUGHPUT[itemId];
+
+    // We know how many samples there are, but not how many hours they take, and
+    // a guess here would be a wrong number in front of a client. The row says so
+    // instead of sitting silent and leaving somebody to work out why the number
+    // above did not come down.
+    if (!rule || !rule.samplesPerHour) {
+      return { kind: "samples", samples, unit: "hour", advisory: true };
+    }
+
+    // The hours box steps in halves, so round to the same grain.
+    offer.quantity = Math.ceil((samples / rule.samplesPerHour) * 2) / 2;
+    offer.samplesPerHour = rule.samplesPerHour;
+  }
+
+  offer.sole = soleLineInGroup(itemId);
+  return offer;
+}
+
 function toggleGroup(key, groupId) {
   const selected = state.selections[key];
   if (selected.has(groupId)) selected.delete(groupId);
@@ -1406,6 +1965,40 @@ function toggleOption(key, groupId, optionId) {
   // reverts it to meaning "all of this group" rather than silently switching
   // the whole facet off under the visitor.
   selected.set(groupId, chosen);
+}
+
+function buildLaserMounts() {
+  const wrap = $("laser-mounts");
+
+  LASER_MOUNTS.forEach(mount => {
+    const chip = document.createElement("button");
+    chip.type = "button";
+    chip.className = "chip";
+    chip.dataset.mountId = mount.id;
+    chip.setAttribute("aria-pressed", "false");
+
+    chip.append(Object.assign(document.createElement("span"), { textContent: mount.name }));
+    chip.append(Object.assign(document.createElement("small"), {
+      className: "chip__hint", textContent: mount.detail
+    }));
+
+    chip.addEventListener("click", () => {
+      state.laser.mount = state.laser.mount === mount.id ? null : mount.id;
+      render();
+    });
+
+    wrap.append(chip);
+  });
+}
+
+function buildTraceChoice() {
+  $("trace-choice").querySelectorAll(".chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      const wanted = chip.dataset.has === "yes";
+      state.hasTraceData = state.hasTraceData === wanted ? null : wanted;
+      render();
+    });
+  });
 }
 
 function buildFacet(facet) {
@@ -1459,7 +2052,12 @@ function buildFacet(facet) {
         const chip = document.createElement("button");
         chip.type = "button";
         chip.className = "chip chip--sub";
-        chip.textContent = option.name;
+        chip.append(Object.assign(document.createElement("span"), { textContent: option.name }));
+        if (option.hint) {
+          chip.append(Object.assign(document.createElement("small"), {
+            className: "chip__hint", textContent: option.hint
+          }));
+        }
         chip.dataset.optionId = option.id;
         chip.setAttribute("aria-pressed", "false");
         chip.addEventListener("click", () => {
@@ -1472,15 +2070,66 @@ function buildFacet(facet) {
     }
 
     if (group.hint) {
-      body.append(Object.assign(document.createElement("p"), {
-        className: "group__note", textContent: group.hint
-      }));
+      const el = document.createElement("p");
+      el.className = "group__note";
+      el.append(withMailLinks(group.hint));
+      body.append(el);
     }
 
     if (group.note) {
-      body.append(Object.assign(document.createElement("p"), {
-        className: "group__note", textContent: group.note
-      }));
+      const el = document.createElement("p");
+      el.className = "group__note";
+      el.append(withMailLinks(group.note));
+      body.append(el);
+    }
+
+    if (group.caution) {
+      const el = document.createElement("p");
+      el.className = "group__note";
+      el.append(Object.assign(document.createElement("strong"), { textContent: group.caution }));
+      body.append(el);
+    }
+
+    // Step one asks for numbers as well as kinds, so each selected leaf gets a
+    // box. They are built once and shown as the selection changes.
+    if (facet.key === "material") {
+      const counts = document.createElement("div");
+      counts.className = "counts";
+      counts.dataset.role = "counts";
+
+      const leafRow = (key, name) => {
+        const row = document.createElement("div");
+        row.className = "count-row";
+        row.dataset.leafKey = key;
+        row.hidden = true;
+
+        const label = document.createElement("label");
+        label.setAttribute("for", `count-${key.replace(":", "-")}`);
+        label.textContent = `${name}: number of samples`;
+
+        const input = document.createElement("input");
+        input.className = "count-row__input";
+        input.type = "number";
+        input.id = `count-${key.replace(":", "-")}`;
+        input.min = "0";
+        input.step = "1";
+        input.placeholder = "0";
+        input.addEventListener("input", () => {
+          const value = Math.max(0, Math.floor(Number(input.value) || 0));
+          if (value > 0) state.sampleCounts[key] = value;
+          else delete state.sampleCounts[key];
+          render();
+        });
+
+        row.append(label, input);
+        return row;
+      };
+
+      counts.append(leafRow(group.id, group.name));
+      group.options.forEach(option =>
+        counts.append(leafRow(`${group.id}:${option.id}`, option.name)));
+
+      body.append(counts);
     }
 
     wrap.append(body);
@@ -1526,6 +2175,18 @@ function syncFacets() {
       wrap.querySelectorAll(".chip--sub").forEach(chip => {
         chip.setAttribute("aria-pressed", String(chosen.has(chip.dataset.optionId)));
       });
+
+      // A number box appears for whatever the visitor actually settled on: the
+      // group itself while nothing is narrowed, otherwise each chosen option.
+      const live = new Set(materialLeaves().map(leaf => leaf.key));
+      wrap.querySelectorAll(".count-row").forEach(row => {
+        const wanted = live.has(row.dataset.leafKey);
+        row.hidden = !wanted;
+        if (!wanted) {
+          const input = row.querySelector(".count-row__input");
+          if (input.value !== "") input.value = "";
+        }
+      });
     });
   });
 
@@ -1536,6 +2197,39 @@ function syncFacets() {
   const otherOn = state.selections.material.has("other")
     || Boolean(minerals && minerals.has("others"));
   $("material-other-field").hidden = !otherOn;
+
+  const prepChosen = state.selections.analysis.get("prep");
+  $("prep-other-field").hidden = !(prepChosen && prepChosen.has("other"));
+
+  // The trace element question only arises for radiogenic work.
+  $("trace-prereq").hidden = !wantsRadiogenic();
+  $("trace-choice").querySelectorAll(".chip").forEach(chip => {
+    chip.setAttribute("aria-pressed",
+      String(state.hasTraceData !== null && (chip.dataset.has === "yes") === state.hasTraceData));
+  });
+
+  // Mount and spot detail is asked only once in-situ work is actually wanted.
+  $("laser-field").hidden = !wantsLaserDetail();
+
+  $("laser-mounts").querySelectorAll(".chip").forEach(chip => {
+    chip.setAttribute("aria-pressed", String(chip.dataset.mountId === state.laser.mount));
+  });
+
+  // The counts only make sense once we know what they are being made on.
+  $("laser-counts").hidden = !state.laser.mount;
+
+  const total = totalSamples();
+  const totalEl = $("count-total");
+  totalEl.hidden = total === 0;
+  if (total > 0) {
+    totalEl.replaceChildren(
+      document.createTextNode("Total submitted: "),
+      Object.assign(document.createElement("strong"),
+        { textContent: `${total} sample${total === 1 ? "" : "s"}` }),
+      document.createTextNode(". These numbers fill in the priced services further down where "
+        + "there is no doubt which line they belong to, and are offered on the rest.")
+    );
+  }
 
   renderNudges();
 }
@@ -1613,24 +2307,28 @@ function buildCatalogue() {
         if (item.caution) note.append(Object.assign(document.createElement("span"), {
           className: "item__flag", textContent: "extra fees may apply"
         }), " ");
-        note.append(item.note);
+        note.append(withMailLinks(item.note));
         nameCell.append(note);
       }
 
-      if (setupModeFor(item.id)) {
-        const flag = document.createElement("span");
-        flag.className = "item__flag item__flag--auto";
-        flag.dataset.role = "auto-flag";
-        flag.textContent = "auto";
-        flag.hidden = true;
-        label.append(" ", flag);
+      const offer = document.createElement("small");
+      offer.className = "item__offer";
+      offer.dataset.role = "offer";
+      offer.hidden = true;
+      nameCell.append(offer);
 
-        const derivation = document.createElement("small");
-        derivation.className = "item__derivation";
-        derivation.dataset.role = "derivation";
-        derivation.hidden = true;
-        nameCell.append(derivation);
-      }
+      const flag = document.createElement("span");
+      flag.className = "item__flag item__flag--auto";
+      flag.dataset.role = "auto-flag";
+      flag.textContent = "auto";
+      flag.hidden = true;
+      label.append(" ", flag);
+
+      const derivation = document.createElement("small");
+      derivation.className = "item__derivation";
+      derivation.dataset.role = "derivation";
+      derivation.hidden = true;
+      nameCell.append(derivation);
 
       const rateCell = document.createElement("div");
       rateCell.className = "item__rate num";
@@ -1666,7 +2364,7 @@ function buildCatalogue() {
     if (category.note) {
       const note = document.createElement("p");
       note.className = "category__note";
-      note.textContent = category.note;
+      note.append(withMailLinks(category.note));
       section.append(note);
     }
 
@@ -1686,7 +2384,7 @@ function optionMatches(key, group, option, item) {
   // exactly as the group-level rule below does.
   if (key === "material")   return option.tags.length === 0
                                 || option.tags.some(tag => item.tags.includes(tag));
-  if (key === "instrument") return option.instruments.some(i => item.instruments.includes(i));
+  if (option.other) return true;
   return facetsOf(item).includes(group.id + ":" + option.id);
 }
 
@@ -1695,7 +2393,6 @@ function groupMatches(key, group, item) {
   // A group with no tags, such as "Other (specify)", constrains nothing by design.
   if (key === "material")   return group.tags.length === 0
                                 || group.tags.some(tag => item.tags.includes(tag));
-  if (key === "instrument") return group.instruments.some(i => item.instruments.includes(i));
   return facetsOf(item).some(facet => facet.startsWith(group.id + ":"));
 }
 
@@ -1722,7 +2419,7 @@ function matchesFacet(key, item) {
   return false;
 }
 
-/** The three facets are different questions, so they combine with AND. */
+/** Material and analysis are different questions, so they combine with AND. */
 function matchesFilters(itemId, options) {
   const entry = ITEMS_BY_ID.get(itemId);
   if (!entry) return false;
@@ -1731,50 +2428,44 @@ function matchesFilters(itemId, options) {
   const ignoreAnalysis = Boolean(options && options.ignoreAnalysis);
 
   return matchesFacet("material", item)
-      && (ignoreAnalysis || matchesFacet("analysis", item))
-      && matchesFacet("instrument", item);
+      && (ignoreAnalysis || matchesFacet("analysis", item));
 }
 
-/* ---------------------------------------------------------------------------
-   Step three only asks a question worth asking.
-
-   An instrument group appears when some priced analysis on it survives the
-   material and analysis choices already made. Where those choices leave one
-   instrument or none, there is nothing to decide and the step disappears
-   entirely: the system has picked. Selections that stop being relevant are
-   dropped rather than left applying invisibly.
-   --------------------------------------------------------------------------- */
-
-function relevantInstrumentGroups() {
-  const relevant = new Set();
-
-  INSTRUMENT_GROUPS.forEach(group => {
-    const reachable = Array.from(ITEMS_BY_ID.values()).some(({ item }) =>
-      !setupModeFor(item.id)
-      && matchesFacet("material", item)
-      && matchesFacet("analysis", item)
-      && groupMatches("instrument", group, item));
-
-    if (reachable) relevant.add(group.id);
-  });
-
-  return relevant;
+/**
+ * Has the visitor asked for radiogenic isotope ratios?
+ *
+ * The analysis selection only. Typing a quantity against a radiogenic line
+ * without choosing radiogenic work used to raise the question too, which put it
+ * on screen in a step the visitor had walked past.
+ */
+function wantsRadiogenic() {
+  return state.selections.analysis.has("radiogenic");
 }
 
-function refreshInstrumentStep() {
-  const relevant = relevantInstrumentGroups();
+/** Is in-situ work still selected? */
+function wantsLaserDetail() {
+  const elemental = state.selections.analysis.get("elemental");
+  return Boolean(elemental) && elemental.has("insitu");
+}
 
-  Array.from(state.selections.instrument.keys()).forEach(groupId => {
-    if (!relevant.has(groupId)) state.selections.instrument.delete(groupId);
-  });
+/**
+ * Session detail describes work that is no longer being asked for once in-situ
+ * is withdrawn, so it is dropped before anything reads it. Called at the top of
+ * render, along with the trace element question, because both change what the
+ * rest of the pass will see.
+ */
+function refreshLaserDetail() {
+  if (wantsLaserDetail()) return;
+  if (!state.laser.mount && !state.laser.spots && !state.laser.lines) return;
 
-  INSTRUMENT_GROUPS.forEach(group => {
-    const wrap = document.querySelector(
-      `.group[data-facet="instrument"][data-group-id="${group.id}"]`);
-    if (wrap) wrap.hidden = !relevant.has(group.id);
-  });
+  state.laser = { mount: null, spots: 0, lines: 0 };
+  $("laser-spots").value = "";
+  $("laser-lines").value = "";
+}
 
-  $("step-instrument-section").hidden = relevant.size < 2;
+/** A question nobody was asked cannot have an answer. */
+function refreshTracePrereq() {
+  if (!wantsRadiogenic()) state.hasTraceData = null;
 }
 
 function applyFilter() {
@@ -1863,6 +2554,7 @@ function derivedSetup(mode) {
   });
 
   return {
+    kind: "setup",
     mode,
     intervals,
     parts,
@@ -1881,13 +2573,84 @@ function effectiveQuantity(itemId) {
   if (manual > 0) return { quantity: manual, auto: false, derivation: null };
 
   const mode = setupModeFor(itemId);
-  if (!mode) return { quantity: 0, auto: false, derivation: null };
+  if (mode) {
+    const derivation = derivedSetup(mode);
+    return { quantity: derivation.hours, auto: derivation.hours > 0, derivation };
+  }
 
-  const derivation = derivedSetup(mode);
-  return { quantity: derivation.hours, auto: derivation.hours > 0, derivation };
+  // Sample numbers fill a line in only where they can go nowhere else. An
+  // ambiguous one still returns its offer, so the row can show what is
+  // available without charging for it.
+  const offer = derivedFromSamples(itemId);
+  if (offer && offer.advisory) return { quantity: 0, auto: false, derivation: offer, offer: true };
+  if (offer && offer.sole) return { quantity: offer.quantity, auto: true, derivation: offer };
+  if (offer) return { quantity: 0, auto: false, derivation: offer, offer: true };
+
+  return { quantity: 0, auto: false, derivation: null };
+}
+
+/**
+ * Where a sample number could apply but several lines compete for it, the row
+ * says so and offers to take it, rather than charging for it uninvited.
+ */
+function renderOffer(row, item, effective) {
+  const el = row.querySelector('[data-role="offer"]');
+  if (!el) return;
+
+  const offer = effective.offer ? effective.derivation : null;
+  el.hidden = !offer;
+  if (!offer) return;
+
+  el.replaceChildren();
+
+  const word = offer.samples === 1 ? "sample" : "samples";
+
+  if (offer.advisory) {
+    el.append(`${offer.samples} ${word} entered above. This work is charged by the hour rather `
+      + "than by the sample, so enter hours if you know them, or leave it blank and we will "
+      + "advise when we see your list.");
+    return;
+  }
+
+  el.append(`${offer.samples} ${word} entered above. `);
+
+  const apply = document.createElement("button");
+  apply.type = "button";
+  apply.className = "link-btn";
+  apply.dataset.role = "apply-offer";
+  apply.textContent = item.unit === "hour"
+    ? `Use ${formatHours(offer.quantity)} h`
+    : `Use ${offer.quantity}`;
+  apply.addEventListener("click", () => {
+    state.quantities[item.id] = offer.quantity;
+    const input = row.querySelector(".item__qty");
+    if (input) input.value = String(offer.quantity);
+    render();
+  });
+
+  el.append(apply);
+}
+
+/** Short form of why a quantity filled itself in, for the estimate and summary. */
+function summariseDerivation(derivation) {
+  if (derivation.kind === "samples") {
+    const word = derivation.samples === 1 ? "sample" : "samples";
+    return derivation.unit === "hour"
+      ? `${derivation.samples} ${word} at ${derivation.samplesPerHour} per hour`
+      : `${derivation.samples} ${word} entered above`;
+  }
+  const plural = derivation.intervals === 1 ? "" : "s";
+  return `${derivation.intervals} × 24 h interval${plural} × ${formatHours(derivation.allowance)} h`;
 }
 
 function describeDerivation(derivation) {
+  if (derivation.kind === "samples") {
+    const word = derivation.samples === 1 ? "sample" : "samples";
+    return derivation.unit === "hour"
+      ? `Automatic: ${derivation.samples} ${word} at ${derivation.samplesPerHour} per hour`
+      : `Automatic: ${derivation.samples} ${word} entered above`;
+  }
+
   if (!derivation || derivation.intervals === 0) return "";
   const spans = derivation.parts
     .map(part => `${formatHours(part.hours)} h on ${part.name} = ${part.intervals} × 24 h`)
@@ -1901,53 +2664,98 @@ function formatHours(value) {
 
 /**
  * Consume booked analyses into any priced package that covers them, most
- * comprehensive package first. Returns the packaged lines and mutates
- * `remaining` so the leftovers can be billed individually.
+/**
+ * How many samples run the whole column-chemistry sequence on one dissolution.
+ * The rebate applies to that shared count only: 20 Sr against 12 Nd means 12
+ * samples share a dissolution and 8 Sr do not.
  */
-function applyCombinations(remaining) {
-  // Nothing can be packaged at a rate that does not exist.
-  if (isEnquireTier()) return [];
+function sharedDissolution(remaining) {
+  const present = SAME_DISSOLUTION.filter(id => (remaining[id] || 0) > 0);
+  if (present.length < 2) return null;
+  return { members: present, count: Math.min(...present.map(id => remaining[id])) };
+}
 
-  const packaged = [];
-  const priced = COMBINATIONS.filter(c => Array.isArray(c.rates));
+/**
+ * Work PCIGR requires rather than work the visitor asked for.
+ *
+ * Both rules here add cost, so both are shown as their own lines with the
+ * reasoning attached, never folded silently into something else.
+ */
+function requiredAdditions(remaining, shared) {
+  const additions = [];
 
-  // Bounded: every pass zeroes at least one member, so it cannot spin.
-  for (let pass = 0; pass < COMBINATIONS.length * 8; pass += 1) {
-    const best = priced
-      .filter(c => c.members.every(id => (remaining[id] || 0) > 0))
-      .sort((a, b) => b.members.length - a.members.length
-                   || a.rates[state.tier] - b.rates[state.tier])[0];
-    if (!best) break;
+  // Radiogenic ratios need compositional data first. If the visitor does not
+  // have it, PCIGR measures it, at their cost.
+  const radiogenic = radiogenicLines().filter(id => (remaining[id] || 0) > 0);
+  if (radiogenic.length && state.hasTraceData === false) {
+    const samples = Math.max(...radiogenic.map(id => remaining[id]));
+    if (samples > 0 && !(remaining["elem-trace"] > 0)) {
+      additions.push({
+        itemId: "elem-trace",
+        quantity: samples,
+        reason: "Trace element concentrations are required for accurate analyses"
+      });
+    }
+  }
 
-    const count = Math.min(...best.members.map(id => remaining[id]));
-    best.members.forEach(id => { remaining[id] -= count; });
-
-    const rate = best.rates[state.tier];
-    packaged.push({
-      name: best.name,
-      category: "Combined analysis",
-      quantity: count,
-      unit: "sample",
-      rate,
-      combined: true,
-      members: best.members.map(id => ITEMS_BY_ID.get(id).item.name),
-      total: rate * count
+  // Rock specimens have to be separated before they can be dated, so the line
+  // is added rather than left for the visitor to remember. Typing a number
+  // against it by hand takes over.
+  const dating = SEPARATION_BEFORE_UPB.filter(id => (remaining[id] || 0) > 0);
+  if (dating.length && !(remaining["prep-minsep"] > 0)) {
+    additions.push({
+      itemId: "prep-minsep",
+      quantity: Math.max(...dating.map(id => remaining[id])),
+      reason: "Mineral separation is required before U-Pb dating"
     });
   }
 
-  return packaged;
+  // One duplicate per batch of samples, PCIGR's QA/QC minimum. Reference
+  // materials are chosen and paid for by PCIGR, so they never appear here.
+  //
+  // A duplicate goes through the same chemistry as the sample it duplicates, so
+  // it is priced the same way: rebated where that sample is rebated. Where a
+  // line is only partly rebated, because another analysis was ordered in
+  // smaller numbers, the duplicates are apportioned the same way. The total
+  // never exceeds one per QA_DUPLICATE_PER samples, which apportioning by
+  // rounding each part up separately would otherwise inflate for small batches.
+  if (state.qaOff) return additions;
+
+  const per = state.qaPer > 0 ? state.qaPer : QA_DUPLICATE_PER;
+  const reason = `QA/QC duplicate, one per ${per} samples`;
+
+  radiogenic.forEach(id => {
+    const total = Math.ceil(remaining[id] / per);
+    if (total <= 0) return;
+
+    const rebatedSamples = shared && shared.members.includes(id)
+      ? Math.min(shared.count, remaining[id]) : 0;
+    const atRebate = Math.min(total, Math.ceil(rebatedSamples / per));
+
+    if (atRebate > 0) {
+      additions.push({ itemId: id, quantity: atRebate, duplicate: true,
+                       rebate: DISSOLUTION_REBATE, reason });
+    }
+    if (total - atRebate > 0) {
+      additions.push({ itemId: id, quantity: total - atRebate, duplicate: true, reason });
+    }
+  });
+
+  return additions;
 }
 
 function computeEstimate() {
   const lines = [];
 
-  // Quantities are resolved once, then drawn down by any package that applies.
+  // Quantities are resolved once, then read by the rebate and the required
+  // additions, neither of which changes them.
   const remaining = Object.create(null);
   CATALOGUE.forEach(category => category.items.forEach(item => {
     remaining[item.id] = effectiveQuantity(item.id).quantity;
   }));
 
-  lines.push(...applyCombinations(remaining));
+  const shared = isEnquireTier() ? null : sharedDissolution(remaining);
+  const additions = requiredAdditions(remaining, shared);
 
   CATALOGUE.forEach(category => {
     category.items.forEach(item => {
@@ -1955,30 +2763,56 @@ function computeEstimate() {
       if (!quantity) return;
       const { auto, derivation } = effectiveQuantity(item.id);
       const rate = rateFor(item.rates);
-      lines.push({
-        name: item.name,
-        category: category.name,
-        quantity,
-        unit: item.unit,
-        rate,
-        auto,
-        derivation,
-        total: rate === null ? 0 : rate * quantity
-      });
+
+      const rebated = shared && shared.members.includes(item.id)
+        ? Math.min(shared.count, quantity) : 0;
+
+      if (rebated > 0) {
+        const discounted = Math.round(rate * (1 - DISSOLUTION_REBATE) * 100) / 100;
+        lines.push({
+          name: item.name, category: category.name, quantity: rebated, unit: item.unit,
+          rate: discounted, auto, derivation, rebate: DISSOLUTION_REBATE,
+          total: discounted * rebated
+        });
+      }
+
+      const full = quantity - rebated;
+      if (full > 0) {
+        lines.push({
+          name: item.name, category: category.name, quantity: full, unit: item.unit,
+          rate, auto: auto && rebated === 0, derivation,
+          total: rate === null ? 0 : rate * full
+        });
+      }
     });
   });
 
-  // Anything left that could share a dissolution is worth a quotation, but the
-  // figure is PCIGR's to give, never this tool's to invent.
-  const combinable = SAME_DISSOLUTION.filter(id => (remaining[id] || 0) > 0)
-    .map(id => ITEMS_BY_ID.get(id).item.name);
+  additions.forEach(addition => {
+    const { item, category } = ITEMS_BY_ID.get(addition.itemId);
+    const listed = rateFor(item.rates);
+    const rate = (listed !== null && addition.rebate)
+      ? Math.round(listed * (1 - addition.rebate) * 100) / 100
+      : listed;
+
+    lines.push({
+      name: addition.duplicate ? `${item.name} duplicate` : item.name,
+      category: category.name,
+      quantity: addition.quantity,
+      unit: item.unit,
+      rate,
+      required: true,
+      rebate: addition.rebate,
+      reason: addition.reason,
+      total: rate === null ? 0 : rate * addition.quantity
+    });
+  });
 
   const subtotal = lines.reduce((sum, line) => sum + line.total, 0);
   const rush = state.rush ? subtotal * RUSH_RATE : 0;
   const beforeCard = subtotal + rush;
   const card = state.card ? beforeCard * CARD_RATE : 0;
 
-  return { lines, subtotal, rush, card, total: beforeCard + card, combinable,
+  return { lines, subtotal, rush, card, total: beforeCard + card,
            enquire: isEnquireTier() };
 }
 
@@ -2011,15 +2845,14 @@ function renderRates() {
     row.classList.toggle("item--active", quantity > 0);
     row.classList.toggle("item--auto", auto);
 
-    // The two setup rows show their derived figure as a placeholder, so it is
-    // plainly an automatic default that typing will replace rather than add to.
+    // An automatic figure shows as a placeholder, so it is plainly a default
+    // that typing will replace rather than add to.
     const input = row.querySelector(".item__qty");
-    if (setupModeFor(item.id)) {
-      input.placeholder = auto ? formatHours(quantity) : "0";
-      input.title = auto
-        ? "Filled automatically from booked instrument time. Type to override."
-        : "";
-    }
+    input.placeholder = auto ? formatHours(quantity) : "0";
+    input.title = !auto ? ""
+      : derivation.kind === "samples"
+        ? "Filled automatically from the numbers entered above. Type to override."
+        : "Filled automatically from booked instrument time. Type to override.";
 
     const derivationEl = row.querySelector('[data-role="derivation"]');
     if (derivationEl) {
@@ -2027,9 +2860,16 @@ function renderRates() {
       derivationEl.hidden = !auto;
     }
 
+    renderOffer(row, item, effectiveQuantity(item.id));
+
     const autoFlag = row.querySelector('[data-role="auto-flag"]');
     if (autoFlag) autoFlag.hidden = !auto;
   });
+}
+
+/** Is any radiogenic isotope ratio work actually booked? */
+function hasRadiogenicWork() {
+  return radiogenicLines().some(id => effectiveQuantity(id).quantity > 0);
 }
 
 function renderEstimate(estimate) {
@@ -2047,10 +2887,12 @@ function renderEstimate(estimate) {
     name.className = "line__name";
     name.textContent = line.name;
 
-    if (line.auto || line.combined) {
+    if (line.auto || line.required || line.rebate) {
       const badge = document.createElement("span");
       badge.className = "line__badge";
-      badge.textContent = line.combined ? "combined" : "auto";
+      badge.textContent = line.required ? "required"
+        : line.rebate ? `${Math.round(line.rebate * 100)}% off`
+        : "auto";
       name.append(" ", badge);
     }
 
@@ -2067,15 +2909,22 @@ function renderEstimate(estimate) {
     if (line.auto) {
       const why = document.createElement("small");
       why.className = "line__detail";
-      why.textContent = `${line.derivation.intervals} × 24 h interval${line.derivation.intervals === 1 ? "" : "s"} × ${formatHours(line.derivation.allowance)} h`;
+      why.textContent = summariseDerivation(line.derivation);
       name.append(why);
     }
 
-    if (line.combined) {
-      const covers = document.createElement("small");
-      covers.className = "line__detail";
-      covers.textContent = `replaces ${line.members.join(", ")}`;
-      name.append(covers);
+    if (line.required) {
+      const why = document.createElement("small");
+      why.className = "line__detail";
+      why.textContent = line.reason;
+      name.append(why);
+    }
+
+    if (line.rebate) {
+      const why = document.createElement("small");
+      why.className = "line__detail";
+      why.textContent = "one dissolution, sequential column chemistry";
+      name.append(why);
     }
 
     const leader = document.createElement("span");
@@ -2125,16 +2974,9 @@ function renderEstimate(estimate) {
   // alongside it usually pays twice for the same work. The fees page says so; the
   // estimator has never said it back.
   const catims = state.quantities["upb-catims"] > 0;
-  const separateprep = state.quantities["prep-minsep"] > 0 || state.quantities["upb-prep"] > 0;
+  const separateprep = state.quantities["prep-minsep"] > 0;
   $("catims-warning").hidden = !(catims && separateprep);
 
-  const combined = $("combined-notice");
-  combined.hidden = estimate.combinable.length < 2;
-  if (!combined.hidden) {
-    combined.textContent = `${estimate.combinable.join(", ")} are priced separately above. `
-      + "If these run from the same dissolution, PCIGR can quote them together for less; "
-      + "contact pcigr@eoas.ubc.ca before treating this figure as final.";
-  }
 }
 
 /** The chosen facets in prose, for the summary and the printed quote. */
@@ -2165,7 +3007,23 @@ function describeScope() {
     }
   });
 
+  const counted = materialLeaves()
+    .filter(leaf => state.sampleCounts[leaf.key] > 0)
+    .map(leaf => `${leaf.name} ${state.sampleCounts[leaf.key]}`);
+  if (counted.length) {
+    parts.push({ label: "Samples", text: `${counted.join("; ")} (${totalSamples()} in total)` });
+  }
+
+  if (state.laser.mount && wantsLaserDetail()) {
+    const mount = LASER_MOUNTS.find(m => m.id === state.laser.mount);
+    const bits = [`${mount.name} (${mount.detail})`];
+    if (state.laser.spots > 0) bits.push(`${state.laser.spots} spots`);
+    if (state.laser.lines > 0) bits.push(`${state.laser.lines} line scans`);
+    parts.push({ label: "Laser session", text: bits.join(", ") });
+  }
+
   if (state.materialOther) parts.push({ label: "Material described as", text: state.materialOther });
+  if (state.prepOther) parts.push({ label: "Preparation described as", text: state.prepOther });
 
   return parts;
 }
@@ -2191,13 +3049,18 @@ function renderHeader() {
 let lastTotal = 0;
 
 function render() {
-  // Relevance first: it can drop instrument selections, which changes filtering.
-  refreshInstrumentStep();
+  // Relevance first: both of these drop state that the rest of the pass reads.
+  refreshLaserDetail();
+  refreshTracePrereq();
 
   const estimate = computeEstimate();
   renderRates();
   renderEstimate(estimate);
   renderHeader();
+
+  // The duplicate rule only matters once there is radiogenic work to duplicate.
+  $("qa-block").hidden = !hasRadiogenicWork();
+
   syncFacets();
   applyFilter();
 
@@ -2240,10 +3103,12 @@ function buildSummary() {
   } else {
     estimate.lines.forEach(line => {
       const unitWord = line.unit === "hour" ? "h" : "sample(s)";
-      const flag = line.auto
-        ? ` [standard setup allowance: ${line.derivation.intervals} x 24 h interval(s) x ${formatHours(line.derivation.allowance)} h]`
-        : line.combined
-          ? ` [combined package, replaces: ${line.members.join(", ")}]`
+      const flag = line.required
+        ? ` [required: ${line.reason}]`
+        : line.rebate
+          ? ` [${Math.round(line.rebate * 100)}% rebate, same dissolution]`
+        : line.auto
+          ? ` [automatic: ${summariseDerivation(line.derivation)}]`
           : "";
       lines.push(line.rate === null
         ? `${line.name}: ${formatHours(line.quantity)} ${unitWord} x rate on request${flag}`
@@ -2260,15 +3125,9 @@ function buildSummary() {
       lines.push(`Estimated total: ${money.format(estimate.total)}`);
     }
 
-    if (estimate.combinable.length >= 2) {
-      lines.push("");
-      lines.push(`NOTE: ${estimate.combinable.join(", ")} are priced separately here. If they`);
-      lines.push("run from the same dissolution, combined pricing is available on request.");
-    }
   }
 
-  if (state.quantities["upb-catims"] > 0
-      && (state.quantities["prep-minsep"] > 0 || state.quantities["upb-prep"] > 0)) {
+  if (state.quantities["upb-catims"] > 0 && state.quantities["prep-minsep"] > 0) {
     lines.push("");
     lines.push("NOTE: CA-TIMS already includes mineral separation and 40 screening spots.");
     lines.push("Booking separation alongside it may double-charge for the same work.");
@@ -2300,17 +3159,23 @@ function buildRatesCsv() {
     ["Schedule revised", SCHEDULE_REVISED],
     ["Exported", new Date().toLocaleDateString("en-CA")],
     ["All amounts in Canadian dollars, exclusive of applicable taxes."],
+    ["To update the estimator: edit the three rate columns only, then run "
+     + "update_rates.py against this file. Leave the id column and the header row alone."],
     [],
     // "Radiogenic isotopes" is two categories, TIMS and MC-ICP-MS, holding some
     // identically named analyses at identical prices. Without the instrument
     // column those rows are indistinguishable in a spreadsheet.
-    ["Category", "Instrument", "Service", "Unit",
+    // `id` leads because it is the key the importer matches on: it has to
+    // survive a trip through a spreadsheet, and being first makes it obvious
+    // that it is not one of the fields to edit.
+    ["id", "Category", "Instrument", "Service", "Unit",
      ...TIERS.filter(t => !t.enquire).map(t => t.name), "Notes"]
   ];
 
   CATALOGUE.forEach(category => {
     category.items.forEach(item => {
       rows.push([
+        item.id,
         category.name,
         category.meta,
         item.name,
@@ -2325,17 +3190,114 @@ function buildRatesCsv() {
   return "\ufeff" + rows.map(row => row.map(csvCell).join(",")).join("\r\n");
 }
 
+/**
+ * The whole schedule, all three published columns, on the page itself.
+ *
+ * A table in the DOM is the only form of this that cannot be blocked. A
+ * download can be refused by a sandboxed iframe with no error and no visible
+ * effect, and the page may well end up inside one on the PCIGR site, so the
+ * table is the primary answer and the CSV is the convenience.
+ */
+function buildFullSchedule() {
+  const root = $("schedule-tables");
+  const published = TIERS.filter(tier => !tier.enquire);
+
+  $("schedule-note").textContent =
+    `All ${ITEMS_BY_ID.size} services, in Canadian dollars and exclusive of applicable taxes. `
+    + `Schedule revised ${SCHEDULE_REVISED}. These are the published rates and do not change with `
+    + "the category chosen above.";
+
+  CATALOGUE.forEach(category => {
+    const block = document.createElement("div");
+    block.className = "schedule__group";
+
+    const head = document.createElement("div");
+    head.className = "schedule__head";
+    head.append(
+      Object.assign(document.createElement("h3"), {
+        className: "schedule__name", textContent: category.name
+      }),
+      Object.assign(document.createElement("span"), {
+        className: "schedule__meta", textContent: category.meta
+      })
+    );
+    block.append(head);
+
+    const scroll = document.createElement("div");
+    scroll.className = "rates__scroll";
+
+    const table = document.createElement("table");
+    table.className = "rate-table";
+
+    const header = document.createElement("tr");
+    ["Service", "Unit", ...published.map(tier => tier.name)].forEach(text => {
+      header.append(Object.assign(document.createElement("th"), { scope: "col", textContent: text }));
+    });
+    table.append(header);
+
+    category.items.forEach(item => {
+      const tr = document.createElement("tr");
+      [item.name,
+       item.unit === "hour" ? "per hour" : "per sample",
+       ...item.rates.map(rate => money.format(rate))
+      ].forEach(text => {
+        tr.append(Object.assign(document.createElement("td"), { textContent: text }));
+      });
+      table.append(tr);
+    });
+
+    scroll.append(table);
+    block.append(scroll);
+    root.append(block);
+  });
+}
+
+function revealCsvText(message) {
+  $("csv-fallback").hidden = false;
+  $("csv-text").hidden = false;
+  $("csv-fallback-note").textContent = message;
+  const area = $("csv-text");
+  area.value = buildRatesCsv().replace(/^\ufeff/, "");
+  area.focus();
+  area.select();
+}
+
 function downloadRatesCsv() {
   const slug = SCHEDULE_REVISED.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
-  const blob = new Blob([buildRatesCsv()], { type: "text/csv;charset=utf-8" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.href = url;
-  link.download = `pcigr-fee-schedule-${slug}.csv`;
-  document.body.append(link);
-  link.click();
-  link.remove();
-  URL.revokeObjectURL(url);
+
+  try {
+    const blob = new Blob([buildRatesCsv()], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `pcigr-fee-schedule-${slug}.csv`;
+    document.body.append(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  } catch (error) {
+    // A sandboxed frame can refuse blob URLs outright.
+    revealCsvText("The download was blocked. Here is the same file as text: select it and copy.");
+    return;
+  }
+
+  // A sandboxed iframe without allow-downloads refuses the click silently, with
+  // no error to catch and nothing on screen, so the way out is always offered
+  // rather than waiting for somebody to work out that nothing happened.
+  const note = $("csv-fallback-note");
+  $("csv-fallback").hidden = false;
+  note.replaceChildren(document.createTextNode("Download started. If nothing happened, "));
+
+  const show = document.createElement("button");
+  show.type = "button";
+  show.className = "link-btn";
+  show.id = "csv-show-text";
+  show.textContent = "show the text instead";
+  show.addEventListener("click", () =>
+    revealCsvText("Select the text below and copy it into a spreadsheet."));
+
+  note.append(show, document.createTextNode("."));
+  $("csv-text").hidden = true;
 }
 
 /* ============================================================================
@@ -2345,15 +3307,32 @@ function downloadRatesCsv() {
 function clearFacets() {
   FACETS.forEach(facet => state.selections[facet.key].clear());
   state.materialOther = "";
+  state.prepOther = "";
+  state.sampleCounts = Object.create(null);
+  state.laser = { mount: null, spots: 0, lines: 0 };
+  state.qaPer = QA_DUPLICATE_PER;
+  state.qaOff = false;
+  $("qa-per").value = String(QA_DUPLICATE_PER);
+  $("qa-off").checked = false;
+  document.querySelectorAll(".count-row__input").forEach(input => { input.value = ""; });
   $("material-other").value = "";
+  $("prep-other").value = "";
 }
 
 function init() {
+  // Read before anything renders, so nothing has to be undone afterwards.
+  if (new URLSearchParams(window.location.search).get("embed") === "1") {
+    document.documentElement.dataset.embed = "1";
+  }
+
   buildTiers();
   FACETS.forEach(buildFacet);
+  buildLaserMounts();
+  buildTraceChoice();
+  buildFullSchedule();
   buildCatalogue();
 
-  // A priced item with no facet can never be reached through step two. That is
+  // A priced item with no facet can never be reached through the analysis step. That is
   // legitimate for technician setup and a bug for anything else, so say so.
   const unclassified = Array.from(ITEMS_BY_ID.keys())
     .filter(id => !Object.prototype.hasOwnProperty.call(ANALYSIS_FACETS, id));
@@ -2366,13 +3345,36 @@ function init() {
     renderHeader();
   });
 
+  $("qa-per").addEventListener("input", event => {
+    const value = Math.floor(Number(event.target.value) || 0);
+    state.qaPer = value > 0 ? value : QA_DUPLICATE_PER;
+    render();
+  });
+
+  $("qa-off").addEventListener("change", event => {
+    state.qaOff = event.target.checked;
+    render();
+  });
+
+  $("prep-other").addEventListener("input", event => {
+    state.prepOther = event.target.value.trim();
+    renderHeader();
+  });
+
+  [["laser-spots", "spots"], ["laser-lines", "lines"]].forEach(([id, key]) => {
+    $(id).addEventListener("input", event => {
+      state.laser[key] = Math.max(0, Math.floor(Number(event.target.value) || 0));
+      renderHeader();
+    });
+  });
+
   $("clear-filters").addEventListener("click", () => {
     clearFacets();
     render();
   });
 
   $("tier-badge").addEventListener("click", () => {
-    $("step-rate-section").scrollIntoView({ behavior: "smooth", block: "center" });
+    $("rate-block").scrollIntoView({ behavior: "smooth", block: "center" });
     const first = $("tier-group").querySelector("input");
     if (first) first.focus({ preventScroll: true });
   });
