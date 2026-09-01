@@ -1454,7 +1454,7 @@ const ANALYSES = [
 
   // Its own heading rather than an Elemental concentrations sub-option, to
   // match PCIGR's own fees page. 1 September 2026.
-  { id: "laser", name: "In situ (laser ablation)",
+  { id: "laser", name: "Laser ablation (in situ)",
     hint: "Elemental concentrations measured in place, without dissolving the sample",
     options: [] },
 
@@ -1629,7 +1629,7 @@ const CATALOGUE = [
     // Split out from Elemental concentrations to match PCIGR's own fees page,
     // which gives in-situ laser ablation its own heading rather than listing
     // it under Elemental concentrations. 1 September 2026.
-    name: "In situ (laser ablation)",
+    name: "Laser ablation (in situ)",
     meta: "LA-ICP-MS",
     items: [
       { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
@@ -2809,7 +2809,7 @@ function wantsElements() {
  * together because every trace-capable route (HR-SF, the per-sample package,
  * laser ablation) runs both. An empty chosen set means "Elemental
  * concentrations" was picked with nothing narrowed inside it, i.e. all of it.
- * In situ (laser ablation) is a separate top-level heading, matching PCIGR's
+ * Laser ablation (in situ) is a separate top-level heading, matching PCIGR's
  * own fees page, but it still calls for the same trace and rare earth groups.
  */
 function wantedElementGroups() {
