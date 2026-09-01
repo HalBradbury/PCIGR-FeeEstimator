@@ -1180,6 +1180,7 @@ p { margin: 0; }
             <button type="button" class="chip" id="elements-clear">Clear</button>
           </div>
           <p class="elements__tally" id="elements-tally" hidden></p>
+          <p class="elements__tally" id="elements-resolution" hidden></p>
         </div>
 
         <div class="other-field" id="laser-field" hidden>
@@ -1513,7 +1514,7 @@ const ELEMENT_GROUPS = [
    sold by the hour: it is here so the request arrives ready to schedule.
    Dimensions are as supplied by PCIGR and worth confirming. */
 const LASER_MOUNTS = [
-  { id: "section",   name: "Thick or thin sections", detail: "12.5 cm wide" },
+  { id: "section",   name: "Thick or thin sections", detail: "2.5 cm wide" },
   { id: "puck",      name: "Pucks",                  detail: "2.5 cm diameter" },
   { id: "irregular", name: "Irregular",              detail: "up to 10 × 15 cm" }
 ];
@@ -1807,6 +1808,57 @@ const THROUGHPUT = {
   }
 };
 
+/* ----------------------------------------------------------------------------
+   Which magnetic-sector resolution each trace or rare earth element needs on
+   the HR-SF (Element 2/AttoM). The quadrupole has no equivalent: its modes are
+   internal standard, gas and helium, an unrelated and still-unconfirmed axis.
+
+   An element needing more than one resolution among those actually selected
+   means separate runs, calibration included in each, per PCIGR (1 September
+   2026): mixing resolutions in one run is not possible on this instrument.
+
+   Sn, La and Nd are deliberately absent. PCIGR's own reference data lists each
+   of them at more than one resolution (Sn at all three), because which one
+   applies depends on what else is in that sample's matrix, not on the element
+   itself, exactly the problem the May & Wiedmeyer interference table raises.
+   Assigning one automatically would risk inventing or hiding an entire run, so
+   these are flagged for PCIGR to confirm instead of resolved automatically.
+   Any element absent from this table (majors included, since they are never
+   run on the HR-SF) is treated the same way: unresolved rather than guessed.
+   ---------------------------------------------------------------------------- */
+const RESOLUTION_OF = {
+  Li: "lr", Y: "lr", Nb: "lr", Mo: "lr", Ag: "lr", Cd: "lr", Sb: "lr", Cs: "lr",
+  Hf: "lr", Ta: "lr", W: "lr", Tl: "lr", Pb: "lr", Bi: "lr", Th: "lr", U: "lr",
+  Sc: "mr", V: "mr", Cr: "mr", Co: "mr", Ni: "mr", Cu: "mr", Zn: "mr", Ga: "mr",
+  Rb: "mr", Sr: "mr", Zr: "mr", Ba: "mr",
+  Ce: "hr", Pr: "hr", Sm: "hr", Eu: "hr", Gd: "hr", Tb: "hr", Dy: "hr",
+  Ho: "hr", Er: "hr", Tm: "hr", Yb: "hr", Lu: "hr"
+};
+
+const RESOLUTION_LABEL = { lr: "low", mr: "medium", hr: "high" };
+
+/**
+ * Every trace or rare earth element the HR-SF can actually run, resolved or
+ * not, in the same group order used everywhere else the list is printed.
+ */
+function elementsForHrSf() {
+  return ELEMENT_GROUPS.filter(g => g.id !== "major")
+    .flatMap(g => g.elements)
+    .filter(symbol => state.elements.has(symbol));
+}
+
+/** Selected HR-SF elements sorted into resolution bands, plus what could not be. */
+function resolutionBandsFor() {
+  const bands = { lr: [], mr: [], hr: [] };
+  const unresolved = [];
+  elementsForHrSf().forEach(symbol => {
+    const band = RESOLUTION_OF[symbol];
+    if (band) bands[band].push(symbol);
+    else unresolved.push(symbol);
+  });
+  return { bands, unresolved, needed: Object.keys(bands).filter(b => bands[b].length > 0) };
+}
+
 const INTERVAL_HOURS = 24;
 
 const SETUP_RULES = {
@@ -2023,6 +2075,32 @@ function derivedFromSamples(itemId) {
   if (samples <= 0) return null;
 
   const offer = { kind: "samples", samples, quantity: samples, unit: entry.item.unit };
+
+  // The HR-SF cannot mix resolutions in one run, so an element list that spans
+  // more than one band prices as that many separate runs, calibration
+  // included in each. Elements PCIGR has not resolved to a single band are
+  // never folded into the count; they are flagged instead.
+  if (entry.item.unit === "hour" && itemId === "elem-hr") {
+    const { bands, unresolved, needed } = resolutionBandsFor();
+
+    if (needed.length === 0) {
+      return {
+        kind: "samples", samples, unit: "hour", advisory: true,
+        awaitingElements: unresolved.length === 0,
+        awaitingResolution: unresolved.length > 0 ? unresolved : null
+      };
+    }
+
+    offer.bands = needed.map(band => {
+      const minutes = minutesPerRunFor(itemId, bands[band].length);
+      return { band, elements: bands[band].length, minutes, hours: runsToHours(samples, minutes) };
+    });
+    offer.quantity = offer.bands.reduce((sum, run) => sum + run.hours, 0);
+    offer.elements = offer.bands.reduce((sum, run) => sum + run.elements, 0);
+    offer.unresolved = unresolved.length > 0 ? unresolved : null;
+    offer.sole = soleLineInGroup(itemId);
+    return offer;
+  }
 
   if (entry.item.unit === "hour") {
     const minutes = minutesPerRunFor(itemId, state.elements.size);
@@ -2381,6 +2459,24 @@ function syncFacets() {
         ? ` selected, about ${formatHours(minutes)} minutes per run.`
         : " selected.")
     );
+  }
+
+  // HR-SF resolution: informational here regardless of which instrument line
+  // ends up booked, since it is about the elements themselves, not the price.
+  const resolution = $("elements-resolution");
+  const { bands, unresolved, needed } = resolutionBandsFor();
+  resolution.hidden = needed.length < 2 && unresolved.length === 0;
+  if (!resolution.hidden) {
+    resolution.replaceChildren();
+    if (needed.length >= 2) {
+      resolution.append(`On the HR-SF this needs ${needed.length} separate resolution runs: `
+        + needed.map(band => `${RESOLUTION_LABEL[band]} (${bands[band].join(", ")})`).join("; ") + ".");
+    }
+    if (unresolved.length) {
+      if (needed.length >= 2) resolution.append(document.createElement("br"));
+      resolution.append(`${unresolved.join(", ")} ${unresolved.length === 1 ? "needs" : "need"} `
+        + "PCIGR to confirm which resolution applies on the HR-SF.");
+    }
   }
 
   // Mount and spot detail is asked only once in-situ work is actually wanted.
@@ -2821,6 +2917,13 @@ function renderOffer(row, item, effective) {
   const word = offer.samples === 1 ? "sample" : "samples";
 
   if (offer.advisory) {
+    if (offer.awaitingResolution) {
+      const list = offer.awaitingResolution.join(", ");
+      const plural = offer.awaitingResolution.length === 1;
+      el.append(`${offer.samples} ${word} entered above. ${list} ${plural ? "needs" : "need"} `
+        + "PCIGR to confirm which resolution applies before this can be priced.");
+      return;
+    }
     el.append(offer.awaitingElements
       ? `${offer.samples} ${word} entered above. Choose the elements you need and we will work `
         + "out the instrument time, or enter hours if you already know them."
@@ -2831,6 +2934,11 @@ function renderOffer(row, item, effective) {
   }
 
   el.append(`${offer.samples} ${word} entered above. `);
+
+  if (offer.bands && offer.bands.length > 1) {
+    el.append(`This needs ${offer.bands.length} separate resolution runs `
+      + `(${offer.bands.map(run => RESOLUTION_LABEL[run.band]).join(", ")}). `);
+  }
 
   const apply = document.createElement("button");
   apply.type = "button";
@@ -2847,12 +2955,34 @@ function renderOffer(row, item, effective) {
   });
 
   el.append(apply);
+
+  if (offer.unresolved) {
+    el.append(document.createElement("br"),
+      `${offer.unresolved.join(", ")} not included above: PCIGR needs to confirm which `
+      + `resolution ${offer.unresolved.length === 1 ? "it needs" : "each needs"}.`);
+  }
 }
 
 /** Short form of why a quantity filled itself in, for the estimate and summary. */
+/** One run's contribution to the summary phrase: "12 elements at 10 min (high)". */
+function describeBand(run) {
+  return `${run.elements} element${run.elements === 1 ? "" : "s"} at ${run.minutes} min `
+    + `(${RESOLUTION_LABEL[run.band]})`;
+}
+
 function summariseDerivation(derivation) {
   if (derivation.kind === "samples") {
     const word = derivation.samples === 1 ? "sample" : "samples";
+    if (derivation.bands) {
+      if (derivation.bands.length === 1) {
+        const run = derivation.bands[0];
+        return `${derivation.samples} ${word} at ${run.minutes} minutes a run, `
+          + `${run.elements} element${run.elements === 1 ? "" : "s"} `
+          + `(${RESOLUTION_LABEL[run.band]} resolution)`;
+      }
+      return `${derivation.samples} ${word}, ${derivation.bands.length} separate runs: `
+        + derivation.bands.map(describeBand).join("; ");
+    }
     return derivation.unit === "hour"
       ? `${derivation.samples} ${word} at ${derivation.minutes} minutes a run, `
         + `${derivation.elements} element${derivation.elements === 1 ? "" : "s"}`
@@ -2865,6 +2995,12 @@ function summariseDerivation(derivation) {
 function describeDerivation(derivation) {
   if (derivation.kind === "samples") {
     const word = derivation.samples === 1 ? "sample" : "samples";
+    if (derivation.bands) {
+      return derivation.bands.length === 1
+        ? `Automatic: ${derivation.samples} ${word} at ${derivation.bands[0].minutes} minutes a run`
+        : `Automatic: ${derivation.samples} ${word}, run separately in `
+          + `${derivation.bands.length} resolution bands`;
+    }
     return derivation.unit === "hour"
       ? `Automatic: ${derivation.samples} ${word} at ${derivation.minutes} minutes a run`
       : `Automatic: ${derivation.samples} ${word} entered above`;
@@ -2937,6 +3073,28 @@ function requiredAdditions(remaining, shared) {
     if (!(remaining[id] > 0)) return;
 
     const rule = THROUGHPUT[id];
+
+    // The HR-SF reruns calibration in every resolution band it books, not once
+    // per booking, since each band is a fully separate run.
+    if (id === "elem-hr") {
+      const { bands, needed } = resolutionBandsFor();
+      if (needed.length === 0) return;
+
+      const perBand = needed.map(band =>
+        runsToHours(rule.calibrationRuns, minutesPerRunFor(id, bands[band].length)));
+
+      additions.push({
+        itemId: id,
+        quantity: perBand.reduce((sum, hours) => sum + hours, 0),
+        calibration: true,
+        reason: needed.length === 1
+          ? `${rule.calibrationRuns} calibration standards at ${minutesPerRunFor(id, bands[needed[0]].length)} minutes a run`
+          : `${rule.calibrationRuns} calibration standards in each of ${needed.length} separate `
+            + `resolution runs (${needed.map(b => RESOLUTION_LABEL[b]).join(", ")})`
+      });
+      return;
+    }
+
     const minutes = minutesPerRunFor(id, state.elements.size);
     if (!minutes || !rule.calibrationRuns) return;
 
