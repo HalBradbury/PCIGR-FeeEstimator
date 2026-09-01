@@ -1507,7 +1507,7 @@ const ELEMENT_GROUPS = [
   { id: "major", name: "Major",
     elements: ["Si", "Ti", "Al", "Fe", "Mn", "Mg", "Ca", "Na", "K", "P"] },
   { id: "trace", name: "Trace",
-    elements: ["Li", "Be", "Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga",
+    elements: ["Li", "Be", "S", "Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga", "Se",
                "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Ag", "Cd", "Sn", "Sb",
                "Cs", "Ba", "Hf", "Ta", "W", "Tl", "Pb", "Bi", "Th", "U"] },
   { id: "ree", name: "Rare earth",
@@ -1892,11 +1892,10 @@ const QUAD_MODE_OPTIONS = {
   Sn: ["cool"], Cs: ["cool"], Al: ["cool"], Mn: ["cool"], Co: ["cool"], Ni: ["cool"],
   Cu: ["cool"], Ga: ["cool"], Ag: ["cool"], Tl: ["cool"], Pb: ["cool"], Bi: ["cool"],
   Ca: ["cool", "he"], Cr: ["cool", "he"], Fe: ["cool", "he"],
-  Si: ["he"]
+  Si: ["he"], S: ["he"], Se: ["he"]
   // Everything else selectable here runs normal plasma only. Ru, Rh, Pd and In
-  // (cool plasma) and S and Se (He gas) are also named by PCIGR, but are not
-  // offered as elements in this schedule at all, so they are left out rather
-  // than dead entries here.
+  // (cool plasma) are also named by PCIGR, but are not offered as elements in
+  // this schedule at all, so they are left out rather than dead entries here.
 };
 
 /** Selected elements PCIGR named for a given optional quad mode ("cool" or "he"). */
