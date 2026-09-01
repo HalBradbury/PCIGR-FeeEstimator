@@ -459,6 +459,35 @@ p { margin: 0; }
   white-space: nowrap;
 }
 
+.elements__group { margin-top: var(--s3); }
+
+.elements__row { display: flex; flex-wrap: wrap; gap: var(--s1); margin-top: var(--s1); }
+
+.chip--element {
+  font-family: var(--font-data);
+  font-size: 0.75rem;
+  padding: 1px var(--s2);
+  min-width: 2.5rem;
+  text-align: center;
+}
+
+.elements__label {
+  font-size: 0.625rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+  font-weight: 600;
+}
+
+.elements__tally {
+  margin-top: var(--s4);
+  padding-top: var(--s3);
+  border-top: 1px solid var(--rule);
+  font-size: 0.8125rem;
+  color: var(--ink-2);
+}
+.elements__tally strong { font-family: var(--font-data); color: var(--ink); }
+
 .qa {
   margin-top: var(--s6);
   padding: var(--s4);
@@ -1137,6 +1166,22 @@ p { margin: 0; }
           </div>
         </div>
 
+        <div class="other-field" id="elements-field" hidden>
+          <span class="field__label eyebrow" id="elements-label">Elements to measure</span>
+          <p class="field__hint" style="margin-top:0;">
+            How many elements sets how long each run takes. Which ones tells us whether standards
+            have to be separated for interferences, and which resolutions an HR-SF session needs.
+          </p>
+          <div id="element-groups" role="group" aria-labelledby="elements-label"></div>
+          <div class="chips" style="margin-top:var(--s3);">
+            <button type="button" class="chip" id="elements-all-major">Select all major elements</button>
+            <button type="button" class="chip" id="elements-all-trace">Select all trace elements</button>
+            <button type="button" class="chip" id="elements-all-ree">Select all rare earth elements</button>
+            <button type="button" class="chip" id="elements-clear">Clear</button>
+          </div>
+          <p class="elements__tally" id="elements-tally" hidden></p>
+        </div>
+
         <div class="other-field" id="laser-field" hidden>
           <span class="field__label eyebrow" id="laser-mount-label">Sample mount</span>
           <div class="chips" role="group" aria-labelledby="laser-mount-label" id="laser-mounts"></div>
@@ -1443,6 +1488,25 @@ const ANALYSES = [
     ]}
 ];
 
+/* ----------------------------------------------------------------------------
+   Elements, for solution ICP-MS.
+
+   The count sets how long a run takes, and which elements were asked for is
+   what tells PCIGR whether standards have to be separated for interferences and
+   which resolutions an HR-SF session needs. A count alone cannot answer either.
+   ---------------------------------------------------------------------------- */
+const ELEMENT_GROUPS = [
+  { id: "major", name: "Major",
+    elements: ["Si", "Ti", "Al", "Fe", "Mn", "Mg", "Ca", "Na", "K", "P"] },
+  { id: "trace", name: "Trace",
+    elements: ["Li", "Be", "Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga",
+               "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Ag", "Cd", "Sn", "Sb",
+               "Cs", "Ba", "Hf", "Ta", "W", "Tl", "Pb", "Bi", "Th", "U"] },
+  { id: "ree", name: "Rare earth",
+    elements: ["La", "Ce", "Pr", "Nd", "Sm", "Eu", "Gd", "Tb",
+               "Dy", "Ho", "Er", "Tm", "Yb", "Lu"] }
+];
+
 /* Laser sessions are planned around what the sample is mounted on and how many
    analyses are wanted. None of it changes the estimate, because laser time is
    sold by the hour: it is here so the request arrives ready to schedule.
@@ -1540,12 +1604,12 @@ const CATALOGUE = [
       { id: "elem-hr", name: "Element 2 / AttoM HR-SF-ICP-MS", unit: "hour", rates: [75, 115, 150],
         tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet"], instruments: ["hrsf"],
         caution: true,
-        note: "Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
+        note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-quad", name: "Agilent 7700x / 8900 quadrupole ICP-MS", unit: "hour", rates: [65, 100, 130],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["quad"],
         caution: true,
-        note: "Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
+        note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["hrsf","quad"],
@@ -1709,22 +1773,36 @@ const radiogenicLines = () => Object.keys(ANALYSIS_FACETS)
   .filter(id => (ANALYSIS_FACETS[id] || []).some(f => f.startsWith("radiogenic:")));
 
 /* ----------------------------------------------------------------------------
-   Samples per instrument hour, for the four lines the schedule sells by the
-   hour rather than by the sample.
+   How long solution ICP-MS work takes.
 
-   Deliberately empty. PCIGR has never published a throughput figure, and an
-   invented one would put a wrong number in front of a client while looking
-   authoritative. While a row is absent its hours stay hand-entered, exactly as
-   before. Fill one in and that instrument derives its hours from the sample
-   numbers entered in the samples step, as the setup allowance derives from hours.
+   Not samples per hour. A single divisor cannot express what actually happens,
+   because calibration is a fixed cost per batch rather than per sample: at six
+   calibration runs the effective rate is 2 samples an hour for a batch of four
+   and 5.6 for a batch of a hundred. So this is minutes per run, banded by how
+   many elements are measured, plus the calibration runs that precede them.
 
-   A lookup table that does nothing until PCIGR supplies real figures.
+   Figures from PCIGR, 1 September 2026: under 5 elements takes 5 to 6 minutes a
+   run and a full trace element suite about 10; calibration is usually 5 or 6
+   standards, and up to 10 to 12 where interferences force separate mixes.
+
+   STILL UNCONFIRMED, which is why both instruments carry identical figures: the
+   same source says timings differ between the quadrupole (internal standard,
+   gas and helium modes) and the HR-SF (how many resolutions) without giving
+   numbers, and says nothing about the range between 5 elements and a full
+   suite, so the upper band covers everything above 5.
+
+   Laser lines are absent on purpose. A laser session is planned in spots and
+   line scans, not solution runs, and none of this applies to it.
    ---------------------------------------------------------------------------- */
 const THROUGHPUT = {
-  // "elem-hr":    { samplesPerHour: 4 },
-  // "elem-quad":  { samplesPerHour: 6 },
-  // "elem-laser": { samplesPerHour: 3 },
-  // "irms-tech":  { samplesPerHour: 8 },
+  "elem-quad": {
+    minutesPerRun: [{ upTo: 5, minutes: 6 }, { upTo: null, minutes: 10 }],
+    calibrationRuns: 6
+  },
+  "elem-hr": {
+    minutesPerRun: [{ upTo: 5, minutes: 6 }, { upTo: null, minutes: 10 }],
+    calibrationRuns: 6
+  }
 };
 
 const INTERVAL_HOURS = 24;
@@ -1760,6 +1838,9 @@ const state = {
 
   /* Laser session detail. Captured for planning, never priced. */
   laser: { mount: null, spots: 0, lines: 0 },
+
+  /* Elements wanted, by symbol. The count drives the run time. */
+  elements: new Set(),
 
   /* null until asked. false means PCIGR runs the trace elements at the user's cost. */
   hasTraceData: null,
@@ -1891,6 +1972,17 @@ function totalSamples() {
   return materialLeaves().reduce((sum, leaf) => sum + (state.sampleCounts[leaf.key] || 0), 0);
 }
 
+/** Minutes a single run takes on this instrument, for this many elements. */
+function minutesPerRunFor(itemId, elements) {
+  const rule = THROUGHPUT[itemId];
+  if (!rule || !elements) return null;
+  const band = rule.minutesPerRun.find(b => b.upTo === null || elements <= b.upTo);
+  return band ? band.minutes : null;
+}
+
+/** Runs converted to booked hours, on the half hour the box steps in. */
+const runsToHours = (runs, minutes) => Math.ceil((runs * minutes / 60) * 2) / 2;
+
 /** The analysis group a line belongs to, taken from the first facet it carries. */
 function primaryAnalysisGroup(itemId) {
   const first = (ANALYSIS_FACETS[itemId] || [])[0];
@@ -1931,19 +2023,21 @@ function derivedFromSamples(itemId) {
   const offer = { kind: "samples", samples, quantity: samples, unit: entry.item.unit };
 
   if (entry.item.unit === "hour") {
-    const rule = THROUGHPUT[itemId];
+    const minutes = minutesPerRunFor(itemId, state.elements.size);
 
-    // We know how many samples there are, but not how many hours they take, and
-    // a guess here would be a wrong number in front of a client. The row says so
-    // instead of sitting silent and leaving somebody to work out why the number
-    // above did not come down.
-    if (!rule || !rule.samplesPerHour) {
-      return { kind: "samples", samples, unit: "hour", advisory: true };
+    // A run time needs an element count. Without one there is nothing to
+    // convert samples into, and a guess would be a wrong number in front of a
+    // client, so the row says what it is waiting for.
+    if (!minutes) {
+      return {
+        kind: "samples", samples, unit: "hour", advisory: true,
+        awaitingElements: Boolean(THROUGHPUT[itemId])
+      };
     }
 
-    // The hours box steps in halves, so round to the same grain.
-    offer.quantity = Math.ceil((samples / rule.samplesPerHour) * 2) / 2;
-    offer.samplesPerHour = rule.samplesPerHour;
+    offer.quantity = runsToHours(samples, minutes);
+    offer.minutes = minutes;
+    offer.elements = state.elements.size;
   }
 
   offer.sole = soleLineInGroup(itemId);
@@ -1988,6 +2082,54 @@ function buildLaserMounts() {
     });
 
     wrap.append(chip);
+  });
+}
+
+function buildElements() {
+  const root = $("element-groups");
+
+  ELEMENT_GROUPS.forEach(group => {
+    const block = document.createElement("div");
+    block.className = "elements__group";
+    block.append(Object.assign(document.createElement("span"), {
+      className: "elements__label", textContent: group.name
+    }));
+
+    const row = document.createElement("div");
+    row.className = "elements__row";
+
+    group.elements.forEach(symbol => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "chip chip--element";
+      chip.textContent = symbol;
+      chip.dataset.element = symbol;
+      chip.setAttribute("aria-pressed", "false");
+      chip.addEventListener("click", () => {
+        if (state.elements.has(symbol)) state.elements.delete(symbol);
+        else state.elements.add(symbol);
+        render();
+      });
+      row.append(chip);
+    });
+
+    block.append(row);
+    root.append(block);
+  });
+
+  const selectGroups = (...groupIds) => {
+    ELEMENT_GROUPS.filter(g => groupIds.includes(g.id))
+      .forEach(g => g.elements.forEach(symbol => state.elements.add(symbol)));
+    render();
+  };
+
+  $("elements-all-major").addEventListener("click", () => selectGroups("major"));
+  $("elements-all-trace").addEventListener("click", () => selectGroups("trace", "ree"));
+  $("elements-all-ree").addEventListener("click", () => selectGroups("ree"));
+
+  $("elements-clear").addEventListener("click", () => {
+    state.elements.clear();
+    render();
   });
 }
 
@@ -2207,6 +2349,26 @@ function syncFacets() {
     chip.setAttribute("aria-pressed",
       String(state.hasTraceData !== null && (chip.dataset.has === "yes") === state.hasTraceData));
   });
+
+  // Elements are asked once elemental concentrations are wanted.
+  $("elements-field").hidden = !wantsElements();
+  $("element-groups").querySelectorAll(".chip--element").forEach(chip => {
+    chip.setAttribute("aria-pressed", String(state.elements.has(chip.dataset.element)));
+  });
+
+  const chosen = state.elements.size;
+  const tally = $("elements-tally");
+  tally.hidden = chosen === 0;
+  if (chosen > 0) {
+    const minutes = minutesPerRunFor("elem-quad", chosen);
+    tally.replaceChildren(
+      Object.assign(document.createElement("strong"),
+        { textContent: `${chosen} element${chosen === 1 ? "" : "s"}` }),
+      document.createTextNode(minutes
+        ? ` selected, about ${formatHours(minutes)} minutes per run.`
+        : " selected.")
+    );
+  }
 
   // Mount and spot detail is asked only once in-situ work is actually wanted.
   $("laser-field").hidden = !wantsLaserDetail();
@@ -2442,6 +2604,16 @@ function wantsRadiogenic() {
   return state.selections.analysis.has("radiogenic");
 }
 
+/** Are element concentrations wanted at all? */
+function wantsElements() {
+  return state.selections.analysis.has("elemental");
+}
+
+/** Session detail describes work nobody is asking for once the analysis goes. */
+function refreshElements() {
+  if (!wantsElements() && state.elements.size) state.elements.clear();
+}
+
 /** Is in-situ work still selected? */
 function wantsLaserDetail() {
   const elemental = state.selections.analysis.get("elemental");
@@ -2606,9 +2778,12 @@ function renderOffer(row, item, effective) {
   const word = offer.samples === 1 ? "sample" : "samples";
 
   if (offer.advisory) {
-    el.append(`${offer.samples} ${word} entered above. This work is charged by the hour rather `
-      + "than by the sample, so enter hours if you know them, or leave it blank and we will "
-      + "advise when we see your list.");
+    el.append(offer.awaitingElements
+      ? `${offer.samples} ${word} entered above. Choose the elements you need and we will work `
+        + "out the instrument time, or enter hours if you already know them."
+      : `${offer.samples} ${word} entered above. This work is charged by the hour rather than by `
+        + "the sample, so enter hours if you know them, or leave it blank and we will advise "
+        + "when we see your list.");
     return;
   }
 
@@ -2636,7 +2811,8 @@ function summariseDerivation(derivation) {
   if (derivation.kind === "samples") {
     const word = derivation.samples === 1 ? "sample" : "samples";
     return derivation.unit === "hour"
-      ? `${derivation.samples} ${word} at ${derivation.samplesPerHour} per hour`
+      ? `${derivation.samples} ${word} at ${derivation.minutes} minutes a run, `
+        + `${derivation.elements} element${derivation.elements === 1 ? "" : "s"}`
       : `${derivation.samples} ${word} entered above`;
   }
   const plural = derivation.intervals === 1 ? "" : "s";
@@ -2647,7 +2823,7 @@ function describeDerivation(derivation) {
   if (derivation.kind === "samples") {
     const word = derivation.samples === 1 ? "sample" : "samples";
     return derivation.unit === "hour"
-      ? `Automatic: ${derivation.samples} ${word} at ${derivation.samplesPerHour} per hour`
+      ? `Automatic: ${derivation.samples} ${word} at ${derivation.minutes} minutes a run`
       : `Automatic: ${derivation.samples} ${word} entered above`;
   }
 
@@ -2709,6 +2885,25 @@ function requiredAdditions(remaining, shared) {
       reason: "Mineral separation is required before U-Pb dating"
     });
   }
+
+  // Calibration standards run before the samples and are charged at the same
+  // hourly rate. They are a fixed cost per batch rather than per sample, which
+  // is why they cannot be folded into a samples-per-hour figure and why they
+  // get a line of their own: on a small batch they are most of the session.
+  Object.keys(THROUGHPUT).forEach(id => {
+    if (!(remaining[id] > 0)) return;
+
+    const rule = THROUGHPUT[id];
+    const minutes = minutesPerRunFor(id, state.elements.size);
+    if (!minutes || !rule.calibrationRuns) return;
+
+    additions.push({
+      itemId: id,
+      quantity: runsToHours(rule.calibrationRuns, minutes),
+      calibration: true,
+      reason: `${rule.calibrationRuns} calibration standards at ${minutes} minutes a run`
+    });
+  });
 
   // One duplicate per batch of samples, PCIGR's QA/QC minimum. Reference
   // materials are chosen and paid for by PCIGR, so they never appear here.
@@ -2795,7 +2990,9 @@ function computeEstimate() {
       : listed;
 
     lines.push({
-      name: addition.duplicate ? `${item.name} duplicate` : item.name,
+      name: addition.duplicate ? `${item.name} duplicate`
+          : addition.calibration ? `${item.name}: calibration standards`
+          : item.name,
       category: category.name,
       quantity: addition.quantity,
       unit: item.unit,
@@ -3022,6 +3219,11 @@ function describeScope() {
     parts.push({ label: "Laser session", text: bits.join(", ") });
   }
 
+  if (state.elements.size) {
+    const ordered = ELEMENT_GROUPS.flatMap(g => g.elements.filter(e => state.elements.has(e)));
+    parts.push({ label: "Elements", text: `${ordered.join(", ")} (${ordered.length})` });
+  }
+
   if (state.materialOther) parts.push({ label: "Material described as", text: state.materialOther });
   if (state.prepOther) parts.push({ label: "Preparation described as", text: state.prepOther });
 
@@ -3051,6 +3253,7 @@ let lastTotal = 0;
 function render() {
   // Relevance first: both of these drop state that the rest of the pass reads.
   refreshLaserDetail();
+  refreshElements();
   refreshTracePrereq();
 
   const estimate = computeEstimate();
@@ -3310,6 +3513,7 @@ function clearFacets() {
   state.prepOther = "";
   state.sampleCounts = Object.create(null);
   state.laser = { mount: null, spots: 0, lines: 0 };
+  state.elements.clear();
   state.qaPer = QA_DUPLICATE_PER;
   state.qaOff = false;
   $("qa-per").value = String(QA_DUPLICATE_PER);
@@ -3328,6 +3532,7 @@ function init() {
   buildTiers();
   FACETS.forEach(buildFacet);
   buildLaserMounts();
+  buildElements();
   buildTraceChoice();
   buildFullSchedule();
   buildCatalogue();
