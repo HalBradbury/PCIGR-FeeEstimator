@@ -1350,8 +1350,9 @@ p { margin: 0; }
         <p><strong>Rates apply to Canadian requests.</strong> Non-Canadian institutions and
         non-profits are quoted individually.</p>
         <p>All amounts in Canadian dollars, exclusive of applicable local and federal taxes.</p>
-        <p>Instrument setup allowances of 1.5 h (solution) and 2 h (laser) are standard per
-        24-hour interval; additional time is charged at gas rates.</p>
+        <p>ICP-MS instrument setup allowances of 2 h (solution or laser ablation) are standard
+        per 24-hour interval; additional time is charged at gas rates. This does not apply to
+        MC-ICP-MS, TIMS or IRMS work.</p>
       </div>
     </aside>
 
@@ -1590,7 +1591,7 @@ const CATALOGUE = [
   {
     name: "Technician time",
     meta: "Labour",
-    note: "Setup and tuning fill in automatically from the ICP-MS hours you book: 1.5 h (solution) or 2 h (laser) per 24-hour interval of instrument time, at the technician rate. Type into either field to override the automatic figure; your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
+    note: "Setup and tuning fill in automatically from ICP-MS hours only, solution or laser ablation: 2 h per 24-hour interval of instrument time, at the technician rate. It does not apply to MC-ICP-MS, TIMS or IRMS work, which is billed per sample. Type into either field to override the automatic figure; your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
     items: [
       { id: "tech-sol",   name: "Instrument setup and tuning: solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet"], instruments: ["hrsf","quad"] },
       { id: "tech-laser", name: "Instrument setup and tuning: laser",    unit: "hour", rates: [120, 180, 240], tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"] }
@@ -1719,11 +1720,12 @@ const CARD_CEILING = 10000;
 /* ----------------------------------------------------------------------------
    Automatic setup allowance.
 
-   1.5 h (solution) and 2 h (laser) of setup and tuning are standard per 24-hour
-   interval of instrument time, charged at the technician labour rate. Setup
-   beyond that allowance is charged at the instrument's own hourly (gas) rate,
-   which is simply the instrument-time rate the operator already books, so no
-   separate line is generated for it.
+   2 h of setup and tuning is standard per 24-hour interval of ICP-MS instrument
+   time, solution or laser ablation, charged at the technician labour rate. This
+   does not apply to MC-ICP-MS, TIMS or IRMS work, which is billed per sample
+   and carries no separate setup line. Setup beyond the allowance is charged at
+   the instrument's own hourly (gas) rate, which is simply the instrument-time
+   rate the operator already books, so no separate line is generated for it.
 
    The allowance fills the matching technician-time field only while that field
    is empty. As soon as an operator types a value there, theirs wins and the
@@ -1808,7 +1810,7 @@ const THROUGHPUT = {
 const INTERVAL_HOURS = 24;
 
 const SETUP_RULES = {
-  solution: { allowance: 1.5, techItemId: "tech-sol",   drivers: ["elem-hr", "elem-quad"] },
+  solution: { allowance: 2.0, techItemId: "tech-sol",   drivers: ["elem-hr", "elem-quad"] },
   laser:    { allowance: 2.0, techItemId: "tech-laser", drivers: ["elem-laser"] }
 };
 
