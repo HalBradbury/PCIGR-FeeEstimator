@@ -1181,6 +1181,7 @@ p { margin: 0; }
           </div>
           <p class="elements__tally" id="elements-tally" hidden></p>
           <p class="elements__tally" id="elements-resolution" hidden></p>
+          <p class="elements__tally" id="elements-plasma" hidden></p>
         </div>
 
         <div class="other-field" id="laser-field" hidden>
@@ -1448,9 +1449,14 @@ const ANALYSES = [
   { id: "elemental", name: "Elemental concentrations", hint: "How much of each element is present",
     options: [
       { id: "major",  name: `Major elements (>${CONCENTRATION_THRESHOLD_PPM} ppm)` },
-      { id: "trace",  name: `Trace elements (<${CONCENTRATION_THRESHOLD_PPM} ppm)` },
-      { id: "insitu", name: "In situ (laser ablation)" }
+      { id: "trace",  name: `Trace elements (<${CONCENTRATION_THRESHOLD_PPM} ppm)` }
     ]},
+
+  // Its own heading rather than an Elemental concentrations sub-option, to
+  // match PCIGR's own fees page. 1 September 2026.
+  { id: "laser", name: "In situ (laser ablation)",
+    hint: "Elemental concentrations measured in place, without dissolving the sample",
+    options: [] },
 
   { id: "stable", name: "Light stable isotope ratios", hint: "δ¹³C, δ¹⁵N, δ¹⁸O",
     options: [
@@ -1537,10 +1543,10 @@ const ANALYSIS_FACETS = {
   "elem-hr":     ["elemental:trace"],
   "elem-quad":   ["elemental:trace", "elemental:major"],
   "elem-trace":  ["elemental:trace"],
-  "elem-laser":  ["elemental:insitu", "elemental:trace"],
+  "elem-laser":  ["laser:insitu", "elemental:trace"],
   // One laser, two mass spectrometers: Pb isotope ratios and trace elements
   // from the same ablation.
-  "elem-split":  ["elemental:insitu", "elemental:trace", "radiogenic:pb"],
+  "elem-split":  ["laser:insitu", "elemental:trace", "radiogenic:pb"],
 
   "irms-cn":     ["stable:cn"],
   "irms-carb":   ["stable:co"],
@@ -1616,8 +1622,16 @@ const CATALOGUE = [
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
         tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["hrsf","quad"],
         caution: true,
-        note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion. Add that separately under Sample preparation if required." },
-
+        note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion. Add that separately under Sample preparation if required." }
+    ]
+  },
+  {
+    // Split out from Elemental concentrations to match PCIGR's own fees page,
+    // which gives in-situ laser ablation its own heading rather than listing
+    // it under Elemental concentrations. 1 September 2026.
+    name: "In situ (laser ablation)",
+    meta: "LA-ICP-MS",
+    items: [
       { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
         tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"],
         note: "Contact us for a daily rate, or for a per-spot rate." },
@@ -1629,7 +1643,7 @@ const CATALOGUE = [
       // is still reachable through ordinary laser ablation.
       { id: "elem-split", name: "Split-stream between 2 ICP-MS", unit: "hour", rates: [135, 200, 270],
         tags: ["rock","zircon","garnet","carbonate"], instruments: ["la"],
-        note: "One laser, two mass spectrometers, so Pb isotope ratios and trace element data come from the same ablation." }
+        note: "One laser, two mass spectrometers, so a radiogenic isotope ratio and trace element data can be obtained from the same ablation." }
     ]
   },
   {
@@ -1691,7 +1705,7 @@ const CATALOGUE = [
     items: [
       { id: "luhf-grt", name: "Garnet, apatite: ID-MC-ICP-MS", unit: "sample", rates: [2250, 3400, 4500],
         tags: ["garnet","rock"], instruments: ["mc"],
-        note: "Contact Dr. Matthijs Smit with questions about Lu-Hf geochronology." }
+        note: "Contact Dr. Matthijs Smit (msmit@eoas.ubc.ca) with questions about Lu-Hf geochronology." }
     ]
   },
   {
@@ -1859,6 +1873,38 @@ function resolutionBandsFor() {
   return { bands, unresolved, needed: Object.keys(bands).filter(b => bands[b].length > 0) };
 }
 
+/* ----------------------------------------------------------------------------
+   Extra Agilent quadrupole modes some elements can optionally run in, per
+   PCIGR (1 September 2026): cool plasma, and He gas (ORS, the octopole
+   reaction system on this instrument) for certain interference-prone masses.
+   An element can carry either, both, or neither.
+
+   Unlike HR-SF resolution, nothing here is mandatory: every element in this
+   schedule tolerates normal plasma, these are offered only as options to
+   reduce certain interferences, so a mixed selection never needs splitting
+   into separate runs. This is informational only and never changes pricing or
+   run count. The cool-plasma list started as a visual read of Agilent's own
+   reference chart and was corrected by PCIGR directly; worth a spot check
+   against the chart regardless before relying on either list.
+   ---------------------------------------------------------------------------- */
+const QUAD_MODE_OPTIONS = {
+  Li: ["cool"], Na: ["cool"], Mg: ["cool"], Zn: ["cool"], Rb: ["cool"], Sr: ["cool"],
+  Sn: ["cool"], Cs: ["cool"], Al: ["cool"], Mn: ["cool"], Co: ["cool"], Ni: ["cool"],
+  Cu: ["cool"], Ga: ["cool"], Ag: ["cool"], Tl: ["cool"], Pb: ["cool"], Bi: ["cool"],
+  Ca: ["cool", "he"], Cr: ["cool", "he"], Fe: ["cool", "he"],
+  Si: ["he"]
+  // Everything else selectable here runs normal plasma only. Ru, Rh, Pd and In
+  // (cool plasma) and S and Se (He gas) are also named by PCIGR, but are not
+  // offered as elements in this schedule at all, so they are left out rather
+  // than dead entries here.
+};
+
+/** Selected elements PCIGR named for a given optional quad mode ("cool" or "he"). */
+function quadModeCandidates(mode) {
+  return ELEMENT_GROUPS.flatMap(g => g.elements)
+    .filter(symbol => state.elements.has(symbol) && (QUAD_MODE_OPTIONS[symbol] || []).includes(mode));
+}
+
 const INTERVAL_HOURS = 24;
 
 const SETUP_RULES = {
@@ -1911,9 +1957,25 @@ const state = {
 const ITEMS_BY_ID = new Map();
 CATALOGUE.forEach(cat => cat.items.forEach(item => ITEMS_BY_ID.set(item.id, { item, category: cat })));
 
-const money = new Intl.NumberFormat("en-CA", {
+const moneyWhole = new Intl.NumberFormat("en-CA", {
+  style: "currency", currency: "CAD", minimumFractionDigits: 0, maximumFractionDigits: 0
+});
+const moneyCents = new Intl.NumberFormat("en-CA", {
   style: "currency", currency: "CAD", minimumFractionDigits: 2, maximumFractionDigits: 2
 });
+
+/**
+ * A whole dollar amount prints with no trailing zeros; a genuine fraction
+ * always prints both digits, never one, so $112.50 never becomes the
+ * ambiguous-looking $112.5. Rounds to the cent first so floating point never
+ * turns an exact dollar amount into a false fraction.
+ */
+const money = {
+  format(value) {
+    const cents = Math.round(value * 100);
+    return cents % 100 === 0 ? moneyWhole.format(cents / 100) : moneyCents.format(cents / 100);
+  }
+};
 
 const $ = id => document.getElementById(id);
 
@@ -2479,6 +2541,27 @@ function syncFacets() {
     }
   }
 
+  // Agilent quad modes: informational only, nothing here ever changes pricing
+  // or run count, since every element also tolerates normal plasma, no gas.
+  const plasma = $("elements-plasma");
+  const coolCandidates = quadModeCandidates("cool");
+  const heCandidates = quadModeCandidates("he");
+  plasma.hidden = coolCandidates.length === 0 && heCandidates.length === 0;
+  if (!plasma.hidden) {
+    plasma.replaceChildren();
+    if (coolCandidates.length) {
+      plasma.append(`On the Agilent quad, ${coolCandidates.join(", ")} `
+        + `${coolCandidates.length === 1 ? "runs" : "run"} well in cool plasma to reduce certain `
+        + "interferences.");
+    }
+    if (heCandidates.length) {
+      if (coolCandidates.length) plasma.append(document.createElement("br"));
+      plasma.append(`${heCandidates.join(", ")} can also run in He gas (ORS) mode to reduce certain `
+        + "interferences.");
+    }
+    plasma.append(document.createElement("br"), "PCIGR will advise which, if any, applies to your samples.");
+  }
+
   // Mount and spot detail is asked only once in-situ work is actually wanted.
   $("laser-field").hidden = !wantsLaserDetail();
 
@@ -2713,9 +2796,9 @@ function wantsRadiogenic() {
   return state.selections.analysis.has("radiogenic");
 }
 
-/** Are element concentrations wanted at all? */
+/** Are element concentrations wanted at all, in solution or in situ? */
 function wantsElements() {
-  return state.selections.analysis.has("elemental");
+  return state.selections.analysis.has("elemental") || state.selections.analysis.has("laser");
 }
 
 /**
@@ -2724,18 +2807,26 @@ function wantsElements() {
  * Only the Agilent quadrupole runs majors, so the major group is offered only
  * once "Major elements" is actually in scope. Trace and rare earth travel
  * together because every trace-capable route (HR-SF, the per-sample package,
- * laser ablation) runs both. An empty chosen set means "elemental
+ * laser ablation) runs both. An empty chosen set means "Elemental
  * concentrations" was picked with nothing narrowed inside it, i.e. all of it.
+ * In situ (laser ablation) is a separate top-level heading, matching PCIGR's
+ * own fees page, but it still calls for the same trace and rare earth groups.
  */
 function wantedElementGroups() {
-  const chosen = state.selections.analysis.get("elemental");
-  if (!chosen) return [];
-  if (chosen.size === 0) return ["major", "trace", "ree"];
+  const elemental = state.selections.analysis.get("elemental");
+  const laser = state.selections.analysis.has("laser");
+  if (!elemental && !laser) return [];
 
-  const groups = [];
-  if (chosen.has("major")) groups.push("major");
-  if (chosen.has("trace") || chosen.has("insitu")) groups.push("trace", "ree");
-  return groups;
+  const groups = new Set();
+  if (elemental) {
+    if (elemental.size === 0) ["major", "trace", "ree"].forEach(g => groups.add(g));
+    else {
+      if (elemental.has("major")) groups.add("major");
+      if (elemental.has("trace")) { groups.add("trace"); groups.add("ree"); }
+    }
+  }
+  if (laser) { groups.add("trace"); groups.add("ree"); }
+  return Array.from(groups);
 }
 
 /** Session detail describes work nobody is asking for once the analysis goes. */
@@ -2755,8 +2846,7 @@ function refreshElements() {
 
 /** Is in-situ work still selected? */
 function wantsLaserDetail() {
-  const elemental = state.selections.analysis.get("elemental");
-  return Boolean(elemental) && elemental.has("insitu");
+  return state.selections.analysis.has("laser");
 }
 
 /**
@@ -3607,7 +3697,7 @@ function buildFullSchedule() {
   const published = TIERS.filter(tier => !tier.enquire);
 
   $("schedule-note").textContent =
-    `All ${ITEMS_BY_ID.size} services, in Canadian dollars and exclusive of applicable taxes. `
+    "All services are in Canadian dollars and exclusive of applicable taxes. "
     + `Schedule revised ${SCHEDULE_REVISED}. These are the published rates and do not change with `
     + "the category chosen above.";
 
