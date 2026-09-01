@@ -2093,6 +2093,7 @@ function buildElements() {
   ELEMENT_GROUPS.forEach(group => {
     const block = document.createElement("div");
     block.className = "elements__group";
+    block.dataset.groupId = group.id;
     block.append(Object.assign(document.createElement("span"), {
       className: "elements__label", textContent: group.name
     }));
@@ -2352,11 +2353,21 @@ function syncFacets() {
       String(state.hasTraceData !== null && (chip.dataset.has === "yes") === state.hasTraceData));
   });
 
-  // Elements are asked once elemental concentrations are wanted.
+  // Elements are asked once elemental concentrations are wanted, narrowed to
+  // whichever groups the analysis selection actually calls for: majors only
+  // run on the quad, so that group disappears once trace or in-situ is chosen
+  // on its own.
   $("elements-field").hidden = !wantsElements();
+  const wantedGroups = wantedElementGroups();
+  $("element-groups").querySelectorAll(".elements__group").forEach(block => {
+    block.hidden = !wantedGroups.includes(block.dataset.groupId);
+  });
   $("element-groups").querySelectorAll(".chip--element").forEach(chip => {
     chip.setAttribute("aria-pressed", String(state.elements.has(chip.dataset.element)));
   });
+  $("elements-all-major").hidden = !wantedGroups.includes("major");
+  $("elements-all-trace").hidden = !wantedGroups.includes("trace");
+  $("elements-all-ree").hidden = !wantedGroups.includes("ree");
 
   const chosen = state.elements.size;
   const tally = $("elements-tally");
@@ -2611,9 +2622,39 @@ function wantsElements() {
   return state.selections.analysis.has("elemental");
 }
 
+/**
+ * Which element groups the current narrowing actually calls for.
+ *
+ * Only the Agilent quadrupole runs majors, so the major group is offered only
+ * once "Major elements" is actually in scope. Trace and rare earth travel
+ * together because every trace-capable route (HR-SF, the per-sample package,
+ * laser ablation) runs both. An empty chosen set means "elemental
+ * concentrations" was picked with nothing narrowed inside it, i.e. all of it.
+ */
+function wantedElementGroups() {
+  const chosen = state.selections.analysis.get("elemental");
+  if (!chosen) return [];
+  if (chosen.size === 0) return ["major", "trace", "ree"];
+
+  const groups = [];
+  if (chosen.has("major")) groups.push("major");
+  if (chosen.has("trace") || chosen.has("insitu")) groups.push("trace", "ree");
+  return groups;
+}
+
 /** Session detail describes work nobody is asking for once the analysis goes. */
 function refreshElements() {
-  if (!wantsElements() && state.elements.size) state.elements.clear();
+  if (!wantsElements()) {
+    if (state.elements.size) state.elements.clear();
+    return;
+  }
+
+  const allowed = new Set(
+    ELEMENT_GROUPS.filter(g => wantedElementGroups().includes(g.id))
+      .flatMap(g => g.elements));
+  Array.from(state.elements).forEach(symbol => {
+    if (!allowed.has(symbol)) state.elements.delete(symbol);
+  });
 }
 
 /** Is in-situ work still selected? */
