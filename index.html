@@ -1174,7 +1174,6 @@ p { margin: 0; }
           </p>
           <div id="element-groups" role="group" aria-labelledby="elements-label"></div>
           <div class="chips" style="margin-top:var(--s3);">
-            <button type="button" class="chip" id="elements-all-major">Select all major elements</button>
             <button type="button" class="chip" id="elements-all-trace">Select all trace elements</button>
             <button type="button" class="chip" id="elements-all-ree">Select all rare earth elements</button>
             <button type="button" class="chip" id="elements-clear">Clear</button>
@@ -1401,11 +1400,14 @@ const rateFor = rates => (isEnquireTier() ? null : rates[state.tier]);
 
 /** Sample material. `tags` are catalogue tag ids; an empty list constrains nothing. */
 const MATERIAL_GROUPS = [
-  { id: "rock", name: "Whole rock", tags: ["rock", "sulfide"], options: [
+  // "solid" marks a form that can be mounted whole for laser ablation, as
+  // distinct from powder, which cannot: it is deliberately withheld from
+  // Powder alone. 2 September 2026.
+  { id: "rock", name: "Whole rock", tags: ["rock", "sulfide", "solid"], options: [
     { id: "powder", name: "Powder",                          tags: ["rock"] },
-    { id: "chip",   name: "Chips or grains",                 tags: ["rock"] },
+    { id: "chip",   name: "Chips or grains",                 tags: ["rock", "solid"] },
     { id: "ore",    name: "Ore & massive sulfide",           tags: ["sulfide", "rock"] },
-    { id: "synth",  name: "Experimental or synthetic solid", tags: ["rock"] }
+    { id: "synth",  name: "Experimental or synthetic solid", tags: ["rock", "solid"] }
   ]},
 
   { id: "mineral", name: "Minerals", tags: ["zircon", "garnet", "carbonate", "sulfide", "feldspar"], options: [
@@ -1440,17 +1442,14 @@ const MATERIAL_GROUPS = [
   { id: "other", name: "Other (specify)", tags: [], other: true, options: [] }
 ];
 
-/* The line between major and trace is a matter of the dilution needed rather
-   than a fixed definition, so it lives here as one number and can be moved. */
-const CONCENTRATION_THRESHOLD_PPM = 100;
-
 /** What the visitor wants to know. Option ids join their group as "group:option". */
 const ANALYSES = [
+  // Major elements were withdrawn from commercial service, 2 September 2026, so
+  // this heading no longer has anything to narrow: same options: [] pattern as
+  // "Laser ablation (in situ)" below, with "elemental:trace" kept as the facet
+  // key ANALYSIS_FACETS already expects.
   { id: "elemental", name: "Elemental concentrations", hint: "How much of each element is present",
-    options: [
-      { id: "major",  name: `Major elements (>${CONCENTRATION_THRESHOLD_PPM} ppm)` },
-      { id: "trace",  name: `Trace elements (<${CONCENTRATION_THRESHOLD_PPM} ppm)` }
-    ]},
+    options: [] },
 
   // Its own heading rather than an Elemental concentrations sub-option, to
   // match PCIGR's own fees page. 1 September 2026.
@@ -1504,8 +1503,6 @@ const ANALYSES = [
    which resolutions an HR-SF session needs. A count alone cannot answer either.
    ---------------------------------------------------------------------------- */
 const ELEMENT_GROUPS = [
-  { id: "major", name: "Major",
-    elements: ["Si", "Ti", "Al", "Fe", "Mn", "Mg", "Ca", "Na", "K", "P"] },
   { id: "trace", name: "Trace",
     elements: ["Li", "Be", "S", "Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga", "Se",
                "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Ag", "Cd", "Sn", "Sb",
@@ -1541,7 +1538,7 @@ const ANALYSIS_FACETS = {
   "tech-laser":  [],
 
   "elem-hr":     ["elemental:trace"],
-  "elem-quad":   ["elemental:trace", "elemental:major"],
+  "elem-quad":   ["elemental:trace"],
   "elem-trace":  ["elemental:trace"],
   "elem-laser":  ["laser:insitu", "elemental:trace"],
   // One laser, two mass spectrometers: Pb isotope ratios and trace elements
@@ -1600,8 +1597,8 @@ const CATALOGUE = [
     meta: "Labour",
     note: "Setup and tuning fill in automatically from ICP-MS hours only, solution or laser ablation: 2 h per 24-hour interval of instrument time, at the technician rate. It does not apply to MC-ICP-MS, TIMS or IRMS work, which is billed per sample. Type into either field to override the automatic figure; your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
     items: [
-      { id: "tech-sol",   name: "Instrument setup and tuning: solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet"], instruments: ["hrsf","quad"] },
-      { id: "tech-laser", name: "Instrument setup and tuning: laser",    unit: "hour", rates: [120, 180, 240], tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"] }
+      { id: "tech-sol",   name: "Instrument setup and tuning: solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet","feldspar"], instruments: ["hrsf","quad"] },
+      { id: "tech-laser", name: "Instrument setup and tuning: laser",    unit: "hour", rates: [120, 180, 240], tags: ["solid","zircon","sulfide","garnet","carbonate","feldspar"], instruments: ["la"] }
     ]
   },
   {
@@ -1610,17 +1607,17 @@ const CATALOGUE = [
     note: "We reserve the right to add a fee for rock samples needing extensive extra work in preparation and analysis. Organic materials and waters may be charged per hour for both preparation and analysis rather than per sample.",
     items: [
       { id: "elem-hr", name: "Element 2 / AttoM HR-SF-ICP-MS", unit: "hour", rates: [75, 115, 150],
-        tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet"], instruments: ["hrsf"],
+        tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet","feldspar"], instruments: ["hrsf"],
         caution: true,
         note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-quad", name: "Agilent 7700x / 8900 quadrupole ICP-MS", unit: "hour", rates: [65, 100, 130],
-        tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["quad"],
+        tags: ["rock","water","carbonate","organic","sulfide","feldspar"], instruments: ["quad"],
         caution: true,
         note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
-        tags: ["rock","water","carbonate","organic","sulfide"], instruments: ["hrsf","quad"],
+        tags: ["rock","water","carbonate","organic","sulfide","feldspar"], instruments: ["hrsf","quad"],
         caution: true,
         note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion. Add that separately under Sample preparation if required." }
     ]
@@ -1633,7 +1630,7 @@ const CATALOGUE = [
     meta: "LA-ICP-MS",
     items: [
       { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
-        tags: ["rock","zircon","sulfide","garnet","carbonate"], instruments: ["la"],
+        tags: ["solid","zircon","sulfide","garnet","carbonate","feldspar"], instruments: ["la"],
         note: "Contact us for a daily rate, or for a per-spot rate." },
 
       // Sulfide is deliberately absent. This line now answers Pb isotope ratios as
@@ -1642,7 +1639,7 @@ const CATALOGUE = [
       // to keep that promise is to drop the tag. Trace element work on sulfides
       // is still reachable through ordinary laser ablation.
       { id: "elem-split", name: "Split-stream between 2 ICP-MS", unit: "hour", rates: [135, 200, 270],
-        tags: ["rock","zircon","garnet","carbonate"], instruments: ["la"],
+        tags: ["solid","zircon","garnet","carbonate","feldspar"], instruments: ["la"],
         note: "One laser, two mass spectrometers, so a radiogenic isotope ratio and trace element data can be obtained from the same ablation." }
     ]
   },
@@ -1690,12 +1687,15 @@ const CATALOGUE = [
         caution: true,
         note: "A typical per-sample cost already includes mineral separation, 40 LA-ICP-MS spots to select grains for chemical abrasion, and 5 CA-TIMS fractions. Do not add those separately. Additional grains or fractions from the same separate are charged extra. Turnaround is 6–8 months for five samples or fewer, or 3–4 months with rush status; contact us for turnaround on larger submissions." },
 
+      // "solid" rather than "rock": these laser-ablate zircon grains, the same
+      // physical requirement that excludes Powder from ordinary laser
+      // ablation above. 2 September 2026.
       { id: "upb-la-det", name: "U-Pb laser ablation: detrital", unit: "sample", rates: [1200, 1800, 2400],
-        tags: ["zircon","rock"], instruments: ["la"],
+        tags: ["zircon","solid"], instruments: ["la"],
         note: "Minimum 60 grains per sample." },
 
       { id: "upb-la-ign", name: "U-Pb laser ablation: igneous", unit: "sample", rates: [1000, 1500, 2000],
-        tags: ["zircon","rock"], instruments: ["la"],
+        tags: ["zircon","solid"], instruments: ["la"],
         note: "Minimum 16 analyses per sample." }
     ]
   },
@@ -1837,8 +1837,8 @@ const THROUGHPUT = {
    itself, exactly the problem the May & Wiedmeyer interference table raises.
    Assigning one automatically would risk inventing or hiding an entire run, so
    these are flagged for PCIGR to confirm instead of resolved automatically.
-   Any element absent from this table (majors included, since they are never
-   run on the HR-SF) is treated the same way: unresolved rather than guessed.
+   Any element absent from this table is treated the same way: unresolved
+   rather than guessed.
    ---------------------------------------------------------------------------- */
 const RESOLUTION_OF = {
   Li: "lr", Y: "lr", Nb: "lr", Mo: "lr", Ag: "lr", Cd: "lr", Sb: "lr", Cs: "lr",
@@ -1856,8 +1856,7 @@ const RESOLUTION_LABEL = { lr: "low", mr: "medium", hr: "high" };
  * not, in the same group order used everywhere else the list is printed.
  */
 function elementsForHrSf() {
-  return ELEMENT_GROUPS.filter(g => g.id !== "major")
-    .flatMap(g => g.elements)
+  return ELEMENT_GROUPS.flatMap(g => g.elements)
     .filter(symbol => state.elements.has(symbol));
 }
 
@@ -1888,14 +1887,17 @@ function resolutionBandsFor() {
    against the chart regardless before relying on either list.
    ---------------------------------------------------------------------------- */
 const QUAD_MODE_OPTIONS = {
-  Li: ["cool"], Na: ["cool"], Mg: ["cool"], Zn: ["cool"], Rb: ["cool"], Sr: ["cool"],
-  Sn: ["cool"], Cs: ["cool"], Al: ["cool"], Mn: ["cool"], Co: ["cool"], Ni: ["cool"],
+  Li: ["cool"], Zn: ["cool"], Rb: ["cool"], Sr: ["cool"],
+  Sn: ["cool"], Cs: ["cool"], Co: ["cool"], Ni: ["cool"],
   Cu: ["cool"], Ga: ["cool"], Ag: ["cool"], Tl: ["cool"], Pb: ["cool"], Bi: ["cool"],
-  Ca: ["cool", "he"], Cr: ["cool", "he"], Fe: ["cool", "he"],
-  Si: ["he"], S: ["he"], Se: ["he"]
+  Cr: ["cool", "he"],
+  S: ["he"], Se: ["he"]
   // Everything else selectable here runs normal plasma only. Ru, Rh, Pd and In
   // (cool plasma) are also named by PCIGR, but are not offered as elements in
   // this schedule at all, so they are left out rather than dead entries here.
+  // Na, Mg, Al, Mn, Ca, Fe and Si were also named for cool plasma or He gas,
+  // but were major elements, withdrawn from commercial service 2 September
+  // 2026, so they are left out here for the same reason.
 };
 
 /** Selected elements PCIGR named for a given optional quad mode ("cool" or "he"). */
@@ -2265,7 +2267,6 @@ function buildElements() {
     render();
   };
 
-  $("elements-all-major").addEventListener("click", () => selectGroups("major"));
   $("elements-all-trace").addEventListener("click", () => selectGroups("trace"));
   $("elements-all-ree").addEventListener("click", () => selectGroups("ree"));
 
@@ -2493,9 +2494,7 @@ function syncFacets() {
   });
 
   // Elements are asked once elemental concentrations are wanted, narrowed to
-  // whichever groups the analysis selection actually calls for: majors only
-  // run on the quad, so that group disappears once trace or in-situ is chosen
-  // on its own.
+  // whichever groups the analysis selection actually calls for.
   $("elements-field").hidden = !wantsElements();
   const wantedGroups = wantedElementGroups();
   $("element-groups").querySelectorAll(".elements__group").forEach(block => {
@@ -2504,7 +2503,6 @@ function syncFacets() {
   $("element-groups").querySelectorAll(".chip--element").forEach(chip => {
     chip.setAttribute("aria-pressed", String(state.elements.has(chip.dataset.element)));
   });
-  $("elements-all-major").hidden = !wantedGroups.includes("major");
   $("elements-all-trace").hidden = !wantedGroups.includes("trace");
   $("elements-all-ree").hidden = !wantedGroups.includes("ree");
 
@@ -2803,29 +2801,15 @@ function wantsElements() {
 /**
  * Which element groups the current narrowing actually calls for.
  *
- * Only the Agilent quadrupole runs majors, so the major group is offered only
- * once "Major elements" is actually in scope. Trace and rare earth travel
- * together because every trace-capable route (HR-SF, the per-sample package,
- * laser ablation) runs both. An empty chosen set means "Elemental
- * concentrations" was picked with nothing narrowed inside it, i.e. all of it.
- * Laser ablation (in situ) is a separate top-level heading, matching PCIGR's
- * own fees page, but it still calls for the same trace and rare earth groups.
+ * Trace and rare earth travel together because every route on offer (HR-SF,
+ * the quadrupole, the per-sample package, laser ablation) runs both. Major
+ * elements are not offered commercially, so there is nothing left to narrow:
+ * choosing either "Elemental concentrations" or "Laser ablation (in situ)"
+ * calls for the same two groups.
  */
 function wantedElementGroups() {
-  const elemental = state.selections.analysis.get("elemental");
-  const laser = state.selections.analysis.has("laser");
-  if (!elemental && !laser) return [];
-
-  const groups = new Set();
-  if (elemental) {
-    if (elemental.size === 0) ["major", "trace", "ree"].forEach(g => groups.add(g));
-    else {
-      if (elemental.has("major")) groups.add("major");
-      if (elemental.has("trace")) { groups.add("trace"); groups.add("ree"); }
-    }
-  }
-  if (laser) { groups.add("trace"); groups.add("ree"); }
-  return Array.from(groups);
+  if (!wantsElements()) return [];
+  return ["trace", "ree"];
 }
 
 /** Session detail describes work nobody is asking for once the analysis goes. */
