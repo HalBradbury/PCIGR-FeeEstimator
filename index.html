@@ -1410,15 +1410,19 @@ const MATERIAL_GROUPS = [
     { id: "synth",  name: "Experimental or synthetic solid", tags: ["rock", "solid"] }
   ]},
 
-  { id: "mineral", name: "Minerals", tags: ["zircon", "garnet", "carbonate", "sulfide", "feldspar"], options: [
+  // "carbonate-mineral" is deliberately distinct from the plain "carbonate"
+  // tag Shell (under Organic material & sediment) also carries: Carbonate
+  // needs its own sample-preparation exclusion without touching Shell's,
+  // which shares nothing else with it. Same trap as Feldspar and Sediment
+  // before it; see "The taxonomy layer". 2 September 2026.
+  { id: "mineral", name: "Minerals", tags: ["zircon", "garnet", "carbonate-mineral", "feldspar"], options: [
     { id: "zircon",    name: "Zircon",        tags: ["zircon"] },
     { id: "garnet",    name: "Garnet",        tags: ["garnet"] },
     { id: "apatite",   name: "Apatite",       tags: ["garnet", "zircon"] },
     { id: "baddeleyite", name: "Baddeleyite", tags: ["zircon"] },
     { id: "monazite",  name: "Monazite",      tags: ["zircon"] },
-    { id: "carbonate", name: "Carbonate",     tags: ["carbonate"] },
+    { id: "carbonate", name: "Carbonate",     tags: ["carbonate-mineral"] },
     { id: "feldspar",  name: "Feldspar",      tags: ["feldspar"] },
-    { id: "sulfide",   name: "Other sulfide", tags: ["sulfide"] },
     { id: "others",    name: "Others",        tags: [] }
   ]},
 
@@ -1597,8 +1601,8 @@ const CATALOGUE = [
     meta: "Labour",
     note: "Setup and tuning fill in automatically from ICP-MS hours only, solution or laser ablation: 2 h per 24-hour interval of instrument time, at the technician rate. It does not apply to MC-ICP-MS, TIMS or IRMS work, which is billed per sample. Type into either field to override the automatic figure; your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
     items: [
-      { id: "tech-sol",   name: "Instrument setup and tuning: solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","zircon","carbonate","organic","water","sulfide","garnet","feldspar"], instruments: ["hrsf","quad"] },
-      { id: "tech-laser", name: "Instrument setup and tuning: laser",    unit: "hour", rates: [120, 180, 240], tags: ["solid","zircon","sulfide","garnet","carbonate","feldspar"], instruments: ["la"] }
+      { id: "tech-sol",   name: "Instrument setup and tuning: solution", unit: "hour", rates: [75, 115, 150],  tags: ["rock","carbonate","carbonate-mineral","organic","water","sulfide","feldspar"], instruments: ["hrsf","quad"] },
+      { id: "tech-laser", name: "Instrument setup and tuning: laser",    unit: "hour", rates: [120, 180, 240], tags: ["solid","zircon","sulfide","carbonate","carbonate-mineral","feldspar"], instruments: ["la"] }
     ]
   },
   {
@@ -1607,17 +1611,17 @@ const CATALOGUE = [
     note: "We reserve the right to add a fee for rock samples needing extensive extra work in preparation and analysis. Organic materials and waters may be charged per hour for both preparation and analysis rather than per sample.",
     items: [
       { id: "elem-hr", name: "Element 2 / AttoM HR-SF-ICP-MS", unit: "hour", rates: [75, 115, 150],
-        tags: ["rock","water","carbonate","organic","sulfide","zircon","garnet","feldspar"], instruments: ["hrsf"],
+        tags: ["rock","water","carbonate","carbonate-mineral","organic","sulfide","feldspar"], instruments: ["hrsf"],
         caution: true,
         note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-quad", name: "Agilent 7700x / 8900 quadrupole ICP-MS", unit: "hour", rates: [65, 100, 130],
-        tags: ["rock","water","carbonate","organic","sulfide","feldspar"], instruments: ["quad"],
+        tags: ["rock","water","carbonate","carbonate-mineral","organic","sulfide","feldspar"], instruments: ["quad"],
         caution: true,
         note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
-        tags: ["rock","water","carbonate","organic","sulfide","feldspar"], instruments: ["hrsf","quad"],
+        tags: ["rock","water","carbonate","carbonate-mineral","organic","sulfide","feldspar"], instruments: ["hrsf","quad"],
         caution: true,
         note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion. Add that separately under Sample preparation if required." }
     ]
@@ -1630,7 +1634,7 @@ const CATALOGUE = [
     meta: "LA-ICP-MS",
     items: [
       { id: "elem-laser", name: "Laser ablation", unit: "hour", rates: [120, 180, 240],
-        tags: ["solid","zircon","sulfide","garnet","carbonate","feldspar"], instruments: ["la"],
+        tags: ["solid","zircon","sulfide","carbonate","carbonate-mineral","feldspar"], instruments: ["la"],
         note: "Contact us for a daily rate, or for a per-spot rate." },
 
       // Sulfide is deliberately absent. This line now answers Pb isotope ratios as
@@ -1639,7 +1643,7 @@ const CATALOGUE = [
       // to keep that promise is to drop the tag. Trace element work on sulfides
       // is still reachable through ordinary laser ablation.
       { id: "elem-split", name: "Split-stream between 2 ICP-MS", unit: "hour", rates: [135, 200, 270],
-        tags: ["solid","zircon","garnet","carbonate","feldspar"], instruments: ["la"],
+        tags: ["solid","zircon","carbonate","carbonate-mineral","feldspar"], instruments: ["la"],
         note: "One laser, two mass spectrometers, so a radiogenic isotope ratio and trace element data can be obtained from the same ablation." }
     ]
   },
@@ -1648,10 +1652,10 @@ const CATALOGUE = [
     meta: "IRMS",
     note: "Waters, H/D materials and artificially enriched isotope samples cannot be analysed. Samples that shorten EA column life (those with salt content or acid residue) attract an added cost on top of the analysis fee. Contact Dr. Kendra Chritz (kendra.chritz@ubc.ca) about high-volume projects or organic soils.",
     items: [
-      { id: "irms-cn",    name: "δ¹⁵N, δ¹³C: solid samples",       unit: "sample", rates: [16, 25, 50],       tags: ["rock","organic","carbonate"], instruments: ["irms"] },
-      { id: "irms-carb",  name: "δ¹³C, δ¹⁸O: carbonates",          unit: "sample", rates: [18, 27, 52],       tags: ["carbonate"], instruments: ["irms"] },
-      { id: "irms-self",  name: "Sample preparation: self-serve",  unit: "sample", rates: [4.85, 4.85, 5.50], tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] },
-      { id: "irms-tech",  name: "Sample preparation: technician",  unit: "hour",   rates: [26, 26, 52],       tags: ["rock","organic","carbonate"], instruments: ["irms","prep"] }
+      { id: "irms-cn",    name: "δ¹⁵N, δ¹³C: solid samples",       unit: "sample", rates: [16, 25, 50],       tags: ["organic","carbonate","carbonate-mineral"], instruments: ["irms"] },
+      { id: "irms-carb",  name: "δ¹³C, δ¹⁸O: carbonates",          unit: "sample", rates: [18, 27, 52],       tags: ["carbonate","carbonate-mineral"], instruments: ["irms"] },
+      { id: "irms-self",  name: "Sample preparation: self-serve",  unit: "sample", rates: [4.85, 4.85, 5.50], tags: ["organic","carbonate","carbonate-mineral"], instruments: ["irms","prep"] },
+      { id: "irms-tech",  name: "Sample preparation: technician",  unit: "hour",   rates: [26, 26, 52],       tags: ["organic","carbonate","carbonate-mineral"], instruments: ["irms","prep"] }
     ]
   },
   {
@@ -1659,7 +1663,7 @@ const CATALOGUE = [
     meta: "TIMS",
     note: "Extra fees apply for mineral separation where needed. Add it under Sample preparation. Isotope ratios run from the same dissolution are rebated automatically below.",
     items: [
-      { id: "tims-sr",      name: "Sr isotope ratios (⁸⁷Sr/⁸⁶Sr)",      unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate"], instruments: ["tims"] }
+      { id: "tims-sr",      name: "Sr isotope ratios (⁸⁷Sr/⁸⁶Sr)",      unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate","carbonate-mineral"], instruments: ["tims"] }
     ]
   },
   {
@@ -1669,11 +1673,23 @@ const CATALOGUE = [
     items: [
       // Whole rock, in the order the column chemistry runs them.
       { id: "mc-nd",      name: "Nd isotope ratios (¹⁴³Nd/¹⁴⁴Nd)",         unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["mc"] },
-      { id: "mc-hf",      name: "Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",         unit: "sample", rates: [310, 465, 620], tags: ["rock","zircon"], instruments: ["mc"] },
-      { id: "mc-pb",      name: "Pb isotope ratios (²⁰⁴Pb, ²⁰⁶Pb, ²⁰⁷Pb, ²⁰⁸Pb)", unit: "sample", rates: [200, 300, 400], tags: ["rock","water","feldspar"], instruments: ["mc"],
+      // "zircon" removed 2 September 2026: Zircon, Apatite, Baddeleyite and
+      // Monazite are limited to Geochronology or laser ablation, and this is
+      // neither (solution-route MC-ICP-MS). Zircon Hf still reaches zircon
+      // materials through mc-hf-zrn below, which is laser-ablation-based.
+      { id: "mc-hf",      name: "Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",         unit: "sample", rates: [310, 465, 620], tags: ["rock"], instruments: ["mc"] },
+      // "water" removed 2 September 2026: Solutions no longer reach any
+      // radiogenic isotope ratio, at the user's request.
+      { id: "mc-pb",      name: "Pb isotope ratios (²⁰⁴Pb, ²⁰⁶Pb, ²⁰⁷Pb, ²⁰⁸Pb)", unit: "sample", rates: [200, 300, 400], tags: ["rock","feldspar"], instruments: ["mc"],
         note: "204Pb is measured on every sample and is required for whole-rock and mineral radiogenic work. It is not measured on the AttoM or the quadrupole, which give Pb concentrations rather than ratios." },
 
-      // On a mineral separate rather than whole rock.
+      // On a mineral separate rather than whole rock. Kept reachable from
+      // Zircon, Apatite, Baddeleyite and Monazite despite sitting under
+      // Radiogenic isotope ratios rather than Geochronology or Laser
+      // ablation (in situ): it is itself LA-MC-ICP-MS, so it is an LA
+      // technique even though the current heading files it elsewhere.
+      // Flagged for the user to confirm rather than assumed; see Open
+      // questions. 2 September 2026.
       { id: "mc-hf-zrn",  name: "Zircon Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",  unit: "sample", rates: [210, 315, 420], tags: ["zircon"], instruments: ["mc","la"] }
     ]
   },
@@ -1713,13 +1729,17 @@ const CATALOGUE = [
     meta: "Wet chemistry & mineral separation",
     note: "Available only for samples we go on to analyse.",
     items: [
-      { id: "prep-crush",   name: "Rock crushing",                              unit: "sample", rates: [180, 270, 360], tags: ["rock","zircon","sulfide","garnet"], instruments: ["prep"] },
+      { id: "prep-crush",   name: "Rock crushing",                              unit: "sample", rates: [180, 270, 360], tags: ["rock","sulfide"], instruments: ["prep"] },
       { id: "prep-leach",   name: "Leaching for radiogenic isotope ratios",     unit: "sample", rates: [105, 160, 220], tags: ["rock","carbonate"], instruments: ["prep"],
         note: "Oceanic basalts require leaching. Contact us if unaltered isotope ratios matter to your study." },
-      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock","zircon","garnet"], instruments: ["prep"],
+      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock"], instruments: ["prep"],
         note: "Needed above about 60% SiO2, and at lower silica where accessory minerals such as zircon, apatite or monazite are present." },
       { id: "prep-micro",   name: "Microwave dissolution",                      unit: "sample", rates: [30, 45, 60],    tags: ["rock","carbonate","organic","sulfide"], instruments: ["prep"] },
-      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["rock","zircon","garnet"], instruments: ["prep"],
+      // "rock" and "garnet" removed 2 September 2026: Zircon, Apatite,
+      // Baddeleyite and Monazite are the only materials that reach Sample
+      // preparation at all, and mineral separation is the only line they
+      // reach there. Whole rock and Garnet no longer show this line.
+      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["zircon"], instruments: ["prep"],
         caution: true,
         note: "Charged even if no zircon is recovered." }
     ]
@@ -2461,6 +2481,16 @@ function syncFacets() {
         chip.setAttribute("aria-pressed", String(chosen.has(chip.dataset.optionId)));
       });
 
+      // Sample material can rule an analysis out entirely: nobody should be
+      // offered a button that leads to an empty results panel.
+      if (facet.key === "analysis") {
+        wrap.hidden = !analysisGroupReachable(group);
+        wrap.querySelectorAll(".chip--sub").forEach(chip => {
+          const option = group.options.find(o => o.id === chip.dataset.optionId);
+          chip.hidden = !(option && analysisOptionReachable(group, option));
+        });
+      }
+
       // A number box appears for whatever the visitor actually settled on: the
       // group itself while nothing is narrowed, otherwise each chosen option.
       const live = new Set(materialLeaves().map(leaf => leaf.key));
@@ -2768,6 +2798,40 @@ function matchesFacet(key, item) {
     }
   }
   return false;
+}
+
+/**
+ * Whether any priced item still reaches this analysis option, given only the
+ * material currently selected. Used to hide an analysis chip nobody could
+ * act on: choosing it would show nothing.
+ *
+ * Deliberately ignores the analysis selection itself, current or otherwise,
+ * so one analysis chip's visibility never depends on another. "Other
+ * (specify)" is always reachable, the same as it always matches once chosen:
+ * an unanticipated need cannot be ruled out by a tag written before it
+ * existed.
+ */
+function analysisOptionReachable(group, option) {
+  if (option.other) return true;
+  const facet = group.id + ":" + option.id;
+  return Array.from(ITEMS_BY_ID.values()).some(({ item }) =>
+    matchesFacet("material", item) && facetsOf(item).includes(facet));
+}
+
+/**
+ * As `analysisOptionReachable`, for the whole group. A group with no options,
+ * a single toggle such as "Laser ablation (in situ)", is covered by the same
+ * "id:" prefix ANALYSIS_FACETS already uses for it; one with options is
+ * reachable exactly when at least one of them is, so a group holding an
+ * "Other (specify)" option, such as Sample preparation, is never hidden.
+ */
+function analysisGroupReachable(group) {
+  if (group.options.length === 0) {
+    const prefix = group.id + ":";
+    return Array.from(ITEMS_BY_ID.values()).some(({ item }) =>
+      matchesFacet("material", item) && facetsOf(item).some(facet => facet.startsWith(prefix)));
+  }
+  return group.options.some(option => analysisOptionReachable(group, option));
 }
 
 /** Material and analysis are different questions, so they combine with AND. */
