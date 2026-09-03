@@ -1433,9 +1433,12 @@ const MATERIAL_GROUPS = [
     { id: "lab",   name: "Laboratory solution",  tags: ["water"] }
   ]},
 
-  { id: "organic", name: "Organic material & sediment", tags: ["organic", "carbonate"], options: [
+  // "sediment" is its own tag, not shared with Soil or Plant: sediment alone
+  // reaches radiogenic isotope ratios, at the user's request, 2 September
+  // 2026 (detrital sediment provenance is a real use of Nd, Hf and Pb).
+  { id: "organic", name: "Organic material & sediment", tags: ["organic", "carbonate", "sediment"], options: [
     { id: "soil",     name: "Soil",                       tags: ["organic"] },
-    { id: "sediment", name: "Sediment",                   tags: ["organic"] },
+    { id: "sediment", name: "Sediment",                   tags: ["organic", "sediment"] },
     { id: "plant",    name: "Plant & organic matter",     tags: ["organic"] },
     { id: "shell",    name: "Shell & biogenic carbonate", tags: ["carbonate"] }
   ]},
@@ -1544,10 +1547,34 @@ const ANALYSIS_FACETS = {
   "elem-hr":     ["elemental:trace"],
   "elem-quad":   ["elemental:trace"],
   "elem-trace":  ["elemental:trace"],
-  "elem-laser":  ["laser:insitu", "elemental:trace"],
+  // "elemental:trace" deliberately absent here, removed 2 September 2026:
+  // Elemental concentrations and Laser ablation (in situ) are separate
+  // headings, matching PCIGR's own fees page, so laser trace element work is
+  // reached only through the Laser ablation heading. The element picker
+  // itself does not depend on this facet either way; wantedElementGroups()
+  // reads the analysis selection directly. Carrying the facet made
+  // "Elemental concentrations" falsely appear reachable for any material
+  // that only reaches these two lines through laser ablation, such as
+  // Zircon, Apatite, Baddeleyite and Monazite.
+  "elem-laser":  ["laser:insitu"],
   // One laser, two mass spectrometers: Pb isotope ratios and trace elements
-  // from the same ablation.
-  "elem-split":  ["laser:insitu", "elemental:trace", "radiogenic:pb"],
+  // from the same ablation. "radiogenic:pb" stays: unlike "elemental:trace"
+  // above, this is a genuine route to a radiogenic isotope ratio, not a
+  // vestigial cross-reference, and it is also the only route to a Pb ratio
+  // for materials that do reach Radiogenic isotope ratios generally (Whole
+  // rock, Carbonate), so it cannot simply move to "laser:insitu" alone
+  // without losing "Pb ratios, both routes" for them. This means Radiogenic
+  // isotope ratios still shows for Zircon, Apatite, Baddeleyite and
+  // Monazite, via this Pb route, even after mc-hf-zrn moved below; flagged
+  // for the user rather than resolved further. 2 September 2026.
+  "elem-split":  ["laser:insitu", "radiogenic:pb"],
+  // Filed under Laser ablation (in situ) rather than Radiogenic isotope
+  // ratios, even though it sits in that catalogue category and is itself an
+  // isotope ratio: it is LA-MC-ICP-MS, and the user asked for it to be
+  // reached that way rather than left under Radiogenic, once Zircon, Apatite,
+  // Baddeleyite and Monazite were limited to Geochronology or laser ablation.
+  // 2 September 2026.
+  "mc-hf-zrn":   ["laser:insitu"],
 
   "irms-cn":     ["stable:cn"],
   "irms-carb":   ["stable:co"],
@@ -1558,7 +1585,6 @@ const ANALYSIS_FACETS = {
 
   "mc-nd":       ["radiogenic:nd"],
   "mc-hf":       ["radiogenic:hf"],
-  "mc-hf-zrn":   ["radiogenic:hf"],
   "mc-pb":       ["radiogenic:pb"],
 
   "upb-catims":  ["geochron:upb"],
@@ -1663,7 +1689,7 @@ const CATALOGUE = [
     meta: "TIMS",
     note: "Extra fees apply for mineral separation where needed. Add it under Sample preparation. Isotope ratios run from the same dissolution are rebated automatically below.",
     items: [
-      { id: "tims-sr",      name: "Sr isotope ratios (⁸⁷Sr/⁸⁶Sr)",      unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate","carbonate-mineral"], instruments: ["tims"] }
+      { id: "tims-sr",      name: "Sr isotope ratios (⁸⁷Sr/⁸⁶Sr)",      unit: "sample", rates: [230, 345, 460], tags: ["rock","carbonate","carbonate-mineral","sediment"], instruments: ["tims"] }
     ]
   },
   {
@@ -1671,25 +1697,28 @@ const CATALOGUE = [
     meta: "MC-ICP-MS",
     note: "Pb, Sr, Nd and Hf run in sequence from one dissolution. Ordering two or more together is rebated automatically below.",
     items: [
-      // Whole rock, in the order the column chemistry runs them.
-      { id: "mc-nd",      name: "Nd isotope ratios (¹⁴³Nd/¹⁴⁴Nd)",         unit: "sample", rates: [290, 435, 580], tags: ["rock"], instruments: ["mc"] },
+      // Whole rock, in the order the column chemistry runs them. "sediment"
+      // added to all three 2 September 2026, at the user's request: detrital
+      // sediment provenance is a real use of Nd, Hf and Pb isotope ratios,
+      // unlike Soil or Plant, which do not carry the tag.
+      { id: "mc-nd",      name: "Nd isotope ratios (¹⁴³Nd/¹⁴⁴Nd)",         unit: "sample", rates: [290, 435, 580], tags: ["rock","sediment"], instruments: ["mc"] },
       // "zircon" removed 2 September 2026: Zircon, Apatite, Baddeleyite and
       // Monazite are limited to Geochronology or laser ablation, and this is
       // neither (solution-route MC-ICP-MS). Zircon Hf still reaches zircon
-      // materials through mc-hf-zrn below, which is laser-ablation-based.
-      { id: "mc-hf",      name: "Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",         unit: "sample", rates: [310, 465, 620], tags: ["rock"], instruments: ["mc"] },
+      // materials through mc-hf-zrn below, filed under Laser ablation.
+      { id: "mc-hf",      name: "Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",         unit: "sample", rates: [310, 465, 620], tags: ["rock","sediment"], instruments: ["mc"] },
       // "water" removed 2 September 2026: Solutions no longer reach any
       // radiogenic isotope ratio, at the user's request.
-      { id: "mc-pb",      name: "Pb isotope ratios (²⁰⁴Pb, ²⁰⁶Pb, ²⁰⁷Pb, ²⁰⁸Pb)", unit: "sample", rates: [200, 300, 400], tags: ["rock","feldspar"], instruments: ["mc"],
+      { id: "mc-pb",      name: "Pb isotope ratios (²⁰⁴Pb, ²⁰⁶Pb, ²⁰⁷Pb, ²⁰⁸Pb)", unit: "sample", rates: [200, 300, 400], tags: ["rock","feldspar","sediment"], instruments: ["mc"],
         note: "204Pb is measured on every sample and is required for whole-rock and mineral radiogenic work. It is not measured on the AttoM or the quadrupole, which give Pb concentrations rather than ratios." },
 
-      // On a mineral separate rather than whole rock. Kept reachable from
-      // Zircon, Apatite, Baddeleyite and Monazite despite sitting under
-      // Radiogenic isotope ratios rather than Geochronology or Laser
-      // ablation (in situ): it is itself LA-MC-ICP-MS, so it is an LA
-      // technique even though the current heading files it elsewhere.
-      // Flagged for the user to confirm rather than assumed; see Open
-      // questions. 2 September 2026.
+      // On a mineral separate rather than whole rock. Sits in this catalogue
+      // category, next to the rest of the MC-ICP-MS sequence it is priced
+      // alongside, but answers "laser:insitu" rather than a radiogenic
+      // facet: it is LA-MC-ICP-MS, and the user asked for it to be reached
+      // through Laser ablation (in situ) rather than Radiogenic isotope
+      // ratios, once Zircon, Apatite, Baddeleyite and Monazite were limited
+      // to Geochronology or laser ablation. 2 September 2026.
       { id: "mc-hf-zrn",  name: "Zircon Hf isotope ratios (¹⁷⁶Hf/¹⁷⁷Hf)",  unit: "sample", rates: [210, 315, 420], tags: ["zircon"], instruments: ["mc","la"] }
     ]
   },
