@@ -3,29 +3,42 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#002145">
 <title>PCIGR Analytical Services Estimator</title>
 <style>
 /* ============================================================
    Tokens
    ============================================================ */
+/* Palette matches PCIGR's own site (pcigr.ubc.ca, the Kraken-VPR Drupal theme),
+   read from its published CSS 4 September 2026: --ubc-blue #002145 as the
+   primary/accent colour, --ubc-blue-cobalt #0055b7 as the link colour, and
+   --ubc-blue-polar #def1f8 as its soft/tertiary tint. The theme has no dark
+   variant, so the dark palette below is this estimator's own extension,
+   built from the same UBC blue family (Neptune and Sky, the theme's lighter
+   blues) rather than invented from scratch. The body font, "Whitney SSm", is
+   a paid webfont Cloud.typography licenses only to pcigr.ubc.ca's own
+   domain; it cannot be loaded here, so it falls back to Arial, the same as
+   it would for anyone viewing the real site without that licence. */
 :root {
-  --ground:      #f6f7f6;
+  --ground:      #f5f5f5;
   --surface:     #ffffff;
-  --surface-2:   #eef1f0;
-  --ink:         #15191a;
-  --ink-2:       #5c6663;
-  --ink-3:       #8a9491;
-  --rule:        #d5dcd9;
-  --rule-strong: #b3bdb9;
-  --accent:      #14675f;
-  --accent-soft: #e2eeec;
+  --surface-2:   #eeeeee;
+  --ink:         #212121;
+  --ink-2:       #616161;
+  --ink-3:       #9e9e9e;
+  --rule:        #e0e0e0;
+  --rule-strong: #bdbdbd;
+  --accent:      #002145;
+  --accent-soft: #def1f8;
   --accent-ink:  #ffffff;
+  --link:        #0055b7;
+  --link-hover:  #002145;
   --warn:        #8f550f;
   --warn-soft:   #f6ecdd;
 
-  --font-display: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
-  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-data: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  --font-display: "Whitney SSm A", "Whitney SSm B", Arial, sans-serif;
+  --font-ui: "Whitney SSm A", "Whitney SSm B", Arial, sans-serif;
+  --font-data: menlo, monaco, consolas, "Liberation Mono", "Courier New", monospace;
 
   --s1: 0.25rem; --s2: 0.5rem;  --s3: 0.75rem; --s4: 1rem;
   --s5: 1.5rem;  --s6: 2rem;    --s7: 3rem;    --s8: 4rem;
@@ -35,50 +48,56 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --ground:      #101413;
-    --surface:     #171c1b;
-    --surface-2:   #1f2524;
-    --ink:         #e7edeb;
-    --ink-2:       #9aa5a2;
-    --ink-3:       #6f7b78;
-    --rule:        #2b3231;
-    --rule-strong: #3d4645;
-    --accent:      #57bcae;
-    --accent-soft: #16302d;
-    --accent-ink:  #06201d;
+    --ground:      #12161c;
+    --surface:     #191f27;
+    --surface-2:   #212933;
+    --ink:         #eceff1;
+    --ink-2:       #a9b2ba;
+    --ink-3:       #79828b;
+    --rule:        #2b323b;
+    --rule-strong: #3d4650;
+    --accent:      #40b4e5;
+    --accent-soft: #16303f;
+    --accent-ink:  #062036;
+    --link:        #61c1e9;
+    --link-hover:  #97d4e9;
     --warn:        #d9a35c;
     --warn-soft:   #2c2317;
   }
 }
 
 :root[data-theme="dark"] {
-  --ground:      #101413;
-  --surface:     #171c1b;
-  --surface-2:   #1f2524;
-  --ink:         #e7edeb;
-  --ink-2:       #9aa5a2;
-  --ink-3:       #6f7b78;
-  --rule:        #2b3231;
-  --rule-strong: #3d4645;
-  --accent:      #57bcae;
-  --accent-soft: #16302d;
-  --accent-ink:  #06201d;
+  --ground:      #12161c;
+  --surface:     #191f27;
+  --surface-2:   #212933;
+  --ink:         #eceff1;
+  --ink-2:       #a9b2ba;
+  --ink-3:       #79828b;
+  --rule:        #2b323b;
+  --rule-strong: #3d4650;
+  --accent:      #40b4e5;
+  --accent-soft: #16303f;
+  --accent-ink:  #062036;
+  --link:        #61c1e9;
+  --link-hover:  #97d4e9;
   --warn:        #d9a35c;
   --warn-soft:   #2c2317;
 }
 
 :root[data-theme="light"] {
-  --ground:      #f6f7f6;
+  --ground:      #f5f5f5;
   --surface:     #ffffff;
-  --surface-2:   #eef1f0;
-  --ink:         #15191a;
-  --ink-2:       #5c6663;
-  --ink-3:       #8a9491;
-  --rule:        #d5dcd9;
-  --rule-strong: #b3bdb9;
-  --accent:      #14675f;
-  --accent-soft: #e2eeec;
+  --surface-2:   #eeeeee;
+  --ink:         #212121;
+  --ink-2:       #616161;
+  --ink-3:       #9e9e9e;
+  --rule:        #e0e0e0;
+  --rule-strong: #bdbdbd;
+  --accent:      #002145;
+  --accent-soft: #def1f8;
   --accent-ink:  #ffffff;
+  --link:        #0055b7;
+  --link-hover:  #002145;
   --warn:        #8f550f;
   --warn-soft:   #f6ecdd;
 }
@@ -101,7 +120,8 @@ body {
 h1, h2, h3 { margin: 0; font-weight: 600; text-wrap: balance; }
 p { margin: 0; }
 
-:where(a) { color: var(--accent); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+:where(a) { color: var(--link); text-decoration-thickness: 1px; text-underline-offset: 2px; }
+:where(a:hover) { color: var(--link-hover); }
 
 :focus-visible {
   outline: 2px solid var(--accent);
@@ -397,11 +417,30 @@ p { margin: 0; }
   background: none;
   border: 0;
   padding: 0;
-  color: var(--accent);
+  color: var(--link);
   text-decoration: underline;
   text-underline-offset: 2px;
   cursor: pointer;
 }
+.link-btn:hover { color: var(--link-hover); }
+
+/* A value-changing action embedded in a sentence of advisory text needs to
+   read as a button, not as another word in the sentence, unlike .link-btn
+   above. Filled to match the theme's own --button-bg/--button-bg--hover. */
+.offer-btn {
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  background: var(--accent);
+  color: var(--accent-ink);
+  border: 1px solid var(--accent);
+  padding: var(--s2) var(--s4);
+  margin-top: var(--s2);
+  cursor: pointer;
+  white-space: nowrap;
+}
+.offer-btn:hover { filter: brightness(1.08); }
+.offer-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 /* ---- full schedule, and the download that may not be allowed to happen ---- */
 .handoff { margin-top: var(--s6); }
@@ -1025,6 +1064,7 @@ p { margin: 0; }
     --ink: #000; --ink-2: #333; --ink-3: #555;
     --rule: #bbb; --rule-strong: #666;
     --accent: #000; --accent-soft: #fff; --warn: #000; --warn-soft: #fff;
+    --link: #000; --link-hover: #000;
   }
 
   body { font-size: 11pt; background: #fff; }
@@ -1511,12 +1551,18 @@ const ANALYSES = [
    ---------------------------------------------------------------------------- */
 const ELEMENT_GROUPS = [
   { id: "trace", name: "Trace",
-    elements: ["Li", "Be", "S", "Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga", "Se",
+    elements: ["Li", "Be", "Sc", "V", "Cr", "Co", "Ni", "Cu", "Zn", "Ga", "Se",
                "Rb", "Sr", "Y", "Zr", "Nb", "Mo", "Ag", "Cd", "Sn", "Sb",
                "Cs", "Ba", "Hf", "Ta", "W", "Tl", "Pb", "Bi", "Th", "U"] },
   { id: "ree", name: "Rare earth",
     elements: ["La", "Ce", "Pr", "Nd", "Sm", "Eu", "Gd", "Tb",
-               "Dy", "Ho", "Er", "Tm", "Yb", "Lu"] }
+               "Dy", "Ho", "Er", "Tm", "Yb", "Lu"] },
+
+  // Mn, Fe and As are only meaningful in solution: on a rock or mineral they
+  // are either a major element (withdrawn from commercial service) or absent
+  // from PCIGR's interference table entirely, so this group is withheld from
+  // both. 4 September 2026, see wantedElementGroups().
+  { id: "solution-trace", name: "Trace (solutions only)", elements: ["Mn", "Fe", "As"] }
 ];
 
 /* Laser sessions are planned around what the sample is mounted on and how many
@@ -1646,8 +1692,14 @@ const CATALOGUE = [
         caution: true,
         note: "Instrument time only. Sample digestion and preparation are not included, and calibration standards are charged at this rate. The per-sample trace element package below covers digestion, preparation and analysis together. Special sample introduction systems such as Aridus carry additional charges. Contact us for availability." },
 
+      // Withdrawn from Solutions and from Soil/Plant, 4 September 2026, at the
+      // user's request: not offered for those materials, matching the note's
+      // own "common rock and mineral separates" already said. "sediment" is
+      // added rather than reusing "organic", the same pattern as Feldspar,
+      // Sediment and Carbonate before it (see "The taxonomy layer"), so
+      // Sediment specifically keeps it while Soil and Plant lose it.
       { id: "elem-trace", name: "All trace elements", unit: "sample", rates: [130, 195, 260],
-        tags: ["rock","water","carbonate","carbonate-mineral","organic","sulfide","feldspar"], instruments: ["hrsf","quad"],
+        tags: ["rock","carbonate","carbonate-mineral","sediment","sulfide","feldspar"], instruments: ["hrsf","quad"],
         caution: true,
         note: "For common rock and mineral separates. Includes sample digestion and preparation, but not high-pressure digestion. Add that separately under Sample preparation if required." }
     ]
@@ -1847,29 +1899,32 @@ const radiogenicLines = () => Object.keys(ANALYSIS_FACETS)
    and 5.6 for a batch of a hundred. So this is minutes per run, banded by how
    many elements are measured, plus the calibration runs that precede them.
 
-   Figures from PCIGR, 1 September 2026: under 5 elements takes 5 to 6 minutes a
-   run and a full trace element suite about 10; calibration is usually 5 or 6
-   standards, and up to 10 to 12 where interferences force separate mixes.
+   PCIGR's pricing scheme, 4 September 2026, replacing the 1 September figures
+   below: a sample needing more than one resolution (HR-SF) or gas mode
+   (quadrupole) is no longer run as separate, fully repeated batches. It runs
+   once, slower, with more calibration standards, since the instrument sweeps
+   more settings per sample rather than starting a whole new batch.
 
-   STILL UNCONFIRMED, which is why both instruments carry identical figures: the
-   same source says timings differ between the quadrupole (internal standard,
-   gas and helium modes) and the HR-SF (how many resolutions) without giving
-   numbers, and says nothing about the range between 5 elements and a full
-   suite, so the upper band covers everything above 5.
+   Elements and modes are scored separately and the worse of the two sets the
+   run's minutes per sample: under 6 elements and 1 resolution/mode is 6
+   minutes; 6 to 10 elements or 2 resolutions/modes is 8; more than 10
+   elements or 3 resolutions/modes is 10. Calibration is 6 standards for 1
+   resolution/mode, plus 3 for each additional one.
 
    Laser lines are absent on purpose. A laser session is planned in spots and
    line scans, not solution runs, and none of this applies to it.
    ---------------------------------------------------------------------------- */
-const THROUGHPUT = {
-  "elem-quad": {
-    minutesPerRun: [{ upTo: 5, minutes: 6 }, { upTo: null, minutes: 10 }],
-    calibrationRuns: 6
-  },
-  "elem-hr": {
-    minutesPerRun: [{ upTo: 5, minutes: 6 }, { upTo: null, minutes: 10 }],
-    calibrationRuns: 6
-  }
-};
+const THROUGHPUT = new Set(["elem-quad", "elem-hr"]);
+
+const RUN_TIME_BY_ELEMENTS = [{ upTo: 5, minutes: 6 }, { upTo: 10, minutes: 8 }, { upTo: null, minutes: 10 }];
+const RUN_TIME_BY_MODES = { 1: 6, 2: 8, 3: 10 };
+const CALIBRATION_BASE = 6;
+const CALIBRATION_PER_EXTRA_MODE = 3;
+
+/** Calibration standards for this many distinct resolutions or gas modes. */
+function calibrationStandardsFor(modes) {
+  return CALIBRATION_BASE + CALIBRATION_PER_EXTRA_MODE * (Math.max(modes || 1, 1) - 1);
+}
 
 /* ----------------------------------------------------------------------------
    Which magnetic-sector resolution each trace or rare earth element needs on
@@ -1877,8 +1932,9 @@ const THROUGHPUT = {
    internal standard, gas and helium, an unrelated and still-unconfirmed axis.
 
    An element needing more than one resolution among those actually selected
-   means separate runs, calibration included in each, per PCIGR (1 September
-   2026): mixing resolutions in one run is not possible on this instrument.
+   means one run at a slower per-sample time, with extra calibration
+   standards, per PCIGR's pricing scheme of 4 September 2026 (superseding an
+   earlier one that ran each resolution as a fully separate batch).
 
    Sn, La and Nd are deliberately absent. PCIGR's own reference data lists each
    of them at more than one resolution (Sn at all three), because which one
@@ -1922,37 +1978,37 @@ function resolutionBandsFor() {
 }
 
 /* ----------------------------------------------------------------------------
-   Extra Agilent quadrupole modes some elements can optionally run in, per
-   PCIGR (1 September 2026): cool plasma, and He gas (ORS, the octopole
-   reaction system on this instrument) for certain interference-prone masses.
-   An element can carry either, both, or neither.
+   Extra Agilent quadrupole mode some elements need, per PCIGR: He gas (ORS,
+   the octopole reaction system on this instrument), for certain
+   interference-prone masses.
 
-   Unlike HR-SF resolution, nothing here is mandatory: every element in this
-   schedule tolerates normal plasma, these are offered only as options to
-   reduce certain interferences, so a mixed selection never needs splitting
-   into separate runs. This is informational only and never changes pricing or
-   run count. The cool-plasma list started as a visual read of Agilent's own
-   reference chart and was corrected by PCIGR directly; worth a spot check
-   against the chart regardless before relying on either list.
+   Cool plasma was removed outright, 4 September 2026, at PCIGR's request:
+   it does not work well on this instrument. It is not merely withheld from
+   the elements that used to carry it, the way a withdrawn material or
+   analysis is elsewhere in this file; the mode itself no longer exists here.
+
+   Unlike before 4 September, this is no longer informational only: choosing
+   an element that needs He gas alongside ones that do not now means a second
+   gas mode in the run, which the pricing scheme above prices like a second
+   HR-SF resolution.
    ---------------------------------------------------------------------------- */
 const QUAD_MODE_OPTIONS = {
-  Li: ["cool"], Zn: ["cool"], Rb: ["cool"], Sr: ["cool"],
-  Sn: ["cool"], Cs: ["cool"], Co: ["cool"], Ni: ["cool"],
-  Cu: ["cool"], Ga: ["cool"], Ag: ["cool"], Tl: ["cool"], Pb: ["cool"], Bi: ["cool"],
-  Cr: ["cool", "he"],
-  S: ["he"], Se: ["he"]
-  // Everything else selectable here runs normal plasma only. Ru, Rh, Pd and In
-  // (cool plasma) are also named by PCIGR, but are not offered as elements in
-  // this schedule at all, so they are left out rather than dead entries here.
-  // Na, Mg, Al, Mn, Ca, Fe and Si were also named for cool plasma or He gas,
-  // but were major elements, withdrawn from commercial service 2 September
-  // 2026, so they are left out here for the same reason.
+  Cr: ["he"], Se: ["he"]
 };
 
-/** Selected elements PCIGR named for a given optional quad mode ("cool" or "he"). */
+/** Selected elements PCIGR named for a given optional quad mode ("he"). */
 function quadModeCandidates(mode) {
   return ELEMENT_GROUPS.flatMap(g => g.elements)
     .filter(symbol => state.elements.has(symbol) && (QUAD_MODE_OPTIONS[symbol] || []).includes(mode));
+}
+
+/**
+ * How many distinct gas modes the quadrupole needs for the elements chosen:
+ * 1 (normal only) or 2 (normal plus He gas), now that cool plasma is gone
+ * and He is the only optional mode left.
+ */
+function quadModesNeeded() {
+  return quadModeCandidates("he").length > 0 ? 2 : 1;
 }
 
 const INTERVAL_HOURS = 24;
@@ -2138,12 +2194,16 @@ function totalSamples() {
   return materialLeaves().reduce((sum, leaf) => sum + (state.sampleCounts[leaf.key] || 0), 0);
 }
 
-/** Minutes a single run takes on this instrument, for this many elements. */
-function minutesPerRunFor(itemId, elements) {
-  const rule = THROUGHPUT[itemId];
-  if (!rule || !elements) return null;
-  const band = rule.minutesPerRun.find(b => b.upTo === null || elements <= b.upTo);
-  return band ? band.minutes : null;
+/**
+ * Minutes a single run takes on this instrument, for this many elements and
+ * this many distinct resolutions or gas modes, whichever sets the slower
+ * time. `modes` defaults to 1 (nothing to reconcile within the run).
+ */
+function minutesPerRunFor(itemId, elements, modes) {
+  if (!THROUGHPUT.has(itemId) || !elements) return null;
+  const byElements = RUN_TIME_BY_ELEMENTS.find(b => b.upTo === null || elements <= b.upTo).minutes;
+  const byModes = RUN_TIME_BY_MODES[Math.min(Math.max(modes || 1, 1), 3)];
+  return Math.max(byElements, byModes);
 }
 
 /** Runs converted to booked hours, on the half hour the box steps in. */
@@ -2188,10 +2248,10 @@ function derivedFromSamples(itemId) {
 
   const offer = { kind: "samples", samples, quantity: samples, unit: entry.item.unit };
 
-  // The HR-SF cannot mix resolutions in one run, so an element list that spans
-  // more than one band prices as that many separate runs, calibration
-  // included in each. Elements PCIGR has not resolved to a single band are
-  // never folded into the count; they are flagged instead.
+  // A resolved element list spanning more than one band now runs once,
+  // slower, rather than as separate repeated batches. Elements PCIGR has not
+  // resolved to a single band are never folded into the count; they are
+  // flagged instead.
   if (entry.item.unit === "hour" && itemId === "elem-hr") {
     const { bands, unresolved, needed } = resolutionBandsFor();
 
@@ -2203,19 +2263,24 @@ function derivedFromSamples(itemId) {
       };
     }
 
-    offer.bands = needed.map(band => {
-      const minutes = minutesPerRunFor(itemId, bands[band].length);
-      return { band, elements: bands[band].length, minutes, hours: runsToHours(samples, minutes) };
-    });
-    offer.quantity = offer.bands.reduce((sum, run) => sum + run.hours, 0);
-    offer.elements = offer.bands.reduce((sum, run) => sum + run.elements, 0);
+    const elements = needed.reduce((sum, band) => sum + bands[band].length, 0);
+    const minutes = minutesPerRunFor(itemId, elements, needed.length);
+    offer.quantity = runsToHours(samples, minutes);
+    offer.minutes = minutes;
+    offer.elements = elements;
+    offer.modes = needed.length;
+    offer.resolutions = needed;
+    if (needed.length > 1) {
+      offer.modeLabel = `${needed.length} resolutions (${needed.map(band => RESOLUTION_LABEL[band]).join(", ")})`;
+    }
     offer.unresolved = unresolved.length > 0 ? unresolved : null;
     offer.sole = soleLineInGroup(itemId);
     return offer;
   }
 
   if (entry.item.unit === "hour") {
-    const minutes = minutesPerRunFor(itemId, state.elements.size);
+    const modes = itemId === "elem-quad" ? quadModesNeeded() : 1;
+    const minutes = minutesPerRunFor(itemId, state.elements.size, modes);
 
     // A run time needs an element count. Without one there is nothing to
     // convert samples into, and a guess would be a wrong number in front of a
@@ -2223,13 +2288,17 @@ function derivedFromSamples(itemId) {
     if (!minutes) {
       return {
         kind: "samples", samples, unit: "hour", advisory: true,
-        awaitingElements: Boolean(THROUGHPUT[itemId])
+        awaitingElements: THROUGHPUT.has(itemId)
       };
     }
 
     offer.quantity = runsToHours(samples, minutes);
     offer.minutes = minutes;
     offer.elements = state.elements.size;
+    if (itemId === "elem-quad" && modes > 1) {
+      offer.modes = modes;
+      offer.modeLabel = `${modes} gas modes (normal, He)`;
+    }
   }
 
   offer.sole = soleLineInGroup(itemId);
@@ -2569,7 +2638,10 @@ function syncFacets() {
   const tally = $("elements-tally");
   tally.hidden = chosen === 0;
   if (chosen > 0) {
-    const minutes = minutesPerRunFor("elem-quad", chosen);
+    // The Agilent quad's own gas mode, since a visitor sees this before
+    // choosing an instrument; the HR-SF note below states its own minutes
+    // separately, since resolution can put it at a different tier.
+    const minutes = minutesPerRunFor("elem-quad", chosen, quadModesNeeded());
     tally.replaceChildren(
       Object.assign(document.createElement("strong"),
         { textContent: `${chosen} element${chosen === 1 ? "" : "s"}` }),
@@ -2587,8 +2659,11 @@ function syncFacets() {
   if (!resolution.hidden) {
     resolution.replaceChildren();
     if (needed.length >= 2) {
-      resolution.append(`On the HR-SF this needs ${needed.length} separate resolution runs: `
-        + needed.map(band => `${RESOLUTION_LABEL[band]} (${bands[band].join(", ")})`).join("; ") + ".");
+      const elements = needed.reduce((sum, band) => sum + bands[band].length, 0);
+      const minutes = minutesPerRunFor("elem-hr", elements, needed.length);
+      resolution.append(`On the HR-SF this needs ${needed.length} resolutions in one run: `
+        + needed.map(band => `${RESOLUTION_LABEL[band]} (${bands[band].join(", ")})`).join("; ")
+        + `, about ${formatHours(minutes)} minutes per sample, with extra calibration standards.`);
     }
     if (unresolved.length) {
       if (needed.length >= 2) resolution.append(document.createElement("br"));
@@ -2597,25 +2672,20 @@ function syncFacets() {
     }
   }
 
-  // Agilent quad modes: informational only, nothing here ever changes pricing
-  // or run count, since every element also tolerates normal plasma, no gas.
+  // Agilent quad gas mode: He gas now affects pricing, the same way an
+  // HR-SF resolution does, since cool plasma was removed on 4 September 2026.
   const plasma = $("elements-plasma");
-  const coolCandidates = quadModeCandidates("cool");
   const heCandidates = quadModeCandidates("he");
-  plasma.hidden = coolCandidates.length === 0 && heCandidates.length === 0;
+  plasma.hidden = heCandidates.length === 0;
   if (!plasma.hidden) {
-    plasma.replaceChildren();
-    if (coolCandidates.length) {
-      plasma.append(`On the Agilent quad, ${coolCandidates.join(", ")} `
-        + `${coolCandidates.length === 1 ? "runs" : "run"} well in cool plasma to reduce certain `
-        + "interferences.");
-    }
-    if (heCandidates.length) {
-      if (coolCandidates.length) plasma.append(document.createElement("br"));
-      plasma.append(`${heCandidates.join(", ")} can also run in He gas (ORS) mode to reduce certain `
-        + "interferences.");
-    }
-    plasma.append(document.createElement("br"), "PCIGR will advise which, if any, applies to your samples.");
+    const minutes = minutesPerRunFor("elem-quad", chosen, quadModesNeeded());
+    plasma.replaceChildren(
+      `${heCandidates.join(", ")} ${heCandidates.length === 1 ? "needs" : "need"} He gas (ORS) mode `
+      + "to reduce certain interferences, alongside elements that do not.",
+      document.createElement("br"),
+      `On the Agilent quad this needs 2 gas modes in one run, about ${formatHours(minutes)} `
+      + "minutes per sample, with extra calibration standards."
+    );
   }
 
   // Mount and spot detail is asked only once in-situ work is actually wanted.
@@ -2848,13 +2918,30 @@ function analysisOptionReachable(group, option) {
 }
 
 /**
+ * True when Solutions is the only material chosen, nothing else alongside it.
+ * A solution has nothing to crush, leach, digest under pressure or separate
+ * minerals from, so Sample preparation is withheld for it below even though
+ * "Other (specify)" would otherwise keep the heading reachable for anything.
+ * Checked as "only", not merely "among", so a mixed selection that also
+ * includes a material with real preparation needs is never affected.
+ */
+function materialIsOnlySolution() {
+  const selected = state.selections.material;
+  return selected.size > 0 && Array.from(selected.keys()).every(id => id === "solution");
+}
+
+/**
  * As `analysisOptionReachable`, for the whole group. A group with no options,
  * a single toggle such as "Laser ablation (in situ)", is covered by the same
  * "id:" prefix ANALYSIS_FACETS already uses for it; one with options is
  * reachable exactly when at least one of them is, so a group holding an
- * "Other (specify)" option, such as Sample preparation, is never hidden.
+ * "Other (specify)" option, such as Sample preparation, is never hidden,
+ * except for the deliberate Solutions exception in `materialIsOnlySolution`.
+ * 4 September 2026, at the user's request.
  */
 function analysisGroupReachable(group) {
+  if (group.id === "prep" && materialIsOnlySolution()) return false;
+
   if (group.options.length === 0) {
     const prefix = group.id + ":";
     return Array.from(ITEMS_BY_ID.values()).some(({ item }) =>
@@ -2899,10 +2986,15 @@ function wantsElements() {
  * elements are not offered commercially, so there is nothing left to narrow:
  * choosing either "Elemental concentrations" or "Laser ablation (in situ)"
  * calls for the same two groups.
+ *
+ * Mn, Fe and As are additionally offered once Solutions is among the chosen
+ * materials, and withheld otherwise, at PCIGR's request. 4 September 2026.
  */
 function wantedElementGroups() {
   if (!wantsElements()) return [];
-  return ["trace", "ree"];
+  const groups = ["trace", "ree"];
+  if (state.selections.material.has("solution")) groups.push("solution-trace");
+  return groups;
 }
 
 /** Session detail describes work nobody is asking for once the analysis goes. */
@@ -3101,14 +3193,14 @@ function renderOffer(row, item, effective) {
 
   el.append(`${offer.samples} ${word} entered above. `);
 
-  if (offer.bands && offer.bands.length > 1) {
-    el.append(`This needs ${offer.bands.length} separate resolution runs `
-      + `(${offer.bands.map(run => RESOLUTION_LABEL[run.band]).join(", ")}). `);
+  if (offer.modeLabel) {
+    el.append(`This needs ${offer.modeLabel} together in one run, `
+      + `about ${offer.minutes} minutes a sample. `);
   }
 
   const apply = document.createElement("button");
   apply.type = "button";
-  apply.className = "link-btn";
+  apply.className = "offer-btn";
   apply.dataset.role = "apply-offer";
   apply.textContent = item.unit === "hour"
     ? `Use ${formatHours(offer.quantity)} h`
@@ -3120,7 +3212,7 @@ function renderOffer(row, item, effective) {
     render();
   });
 
-  el.append(apply);
+  el.append(document.createElement("br"), apply);
 
   if (offer.unresolved) {
     el.append(document.createElement("br"),
@@ -3130,29 +3222,17 @@ function renderOffer(row, item, effective) {
 }
 
 /** Short form of why a quantity filled itself in, for the estimate and summary. */
-/** One run's contribution to the summary phrase: "12 elements at 10 min (high)". */
-function describeBand(run) {
-  return `${run.elements} element${run.elements === 1 ? "" : "s"} at ${run.minutes} min `
-    + `(${RESOLUTION_LABEL[run.band]})`;
-}
-
 function summariseDerivation(derivation) {
   if (derivation.kind === "samples") {
     const word = derivation.samples === 1 ? "sample" : "samples";
-    if (derivation.bands) {
-      if (derivation.bands.length === 1) {
-        const run = derivation.bands[0];
-        return `${derivation.samples} ${word} at ${run.minutes} minutes a run, `
-          + `${run.elements} element${run.elements === 1 ? "" : "s"} `
-          + `(${RESOLUTION_LABEL[run.band]} resolution)`;
-      }
-      return `${derivation.samples} ${word}, ${derivation.bands.length} separate runs: `
-        + derivation.bands.map(describeBand).join("; ");
+    if (derivation.unit === "hour") {
+      const elements = derivation.elements
+        ? `, ${derivation.elements} element${derivation.elements === 1 ? "" : "s"}`
+        : "";
+      const modes = derivation.modeLabel ? `, ${derivation.modeLabel}` : "";
+      return `${derivation.samples} ${word} at ${derivation.minutes} minutes a run${elements}${modes}`;
     }
-    return derivation.unit === "hour"
-      ? `${derivation.samples} ${word} at ${derivation.minutes} minutes a run, `
-        + `${derivation.elements} element${derivation.elements === 1 ? "" : "s"}`
-      : `${derivation.samples} ${word} entered above`;
+    return `${derivation.samples} ${word} entered above`;
   }
   const plural = derivation.intervals === 1 ? "" : "s";
   return `${derivation.intervals} × 24 h interval${plural} × ${formatHours(derivation.allowance)} h`;
@@ -3161,12 +3241,6 @@ function summariseDerivation(derivation) {
 function describeDerivation(derivation) {
   if (derivation.kind === "samples") {
     const word = derivation.samples === 1 ? "sample" : "samples";
-    if (derivation.bands) {
-      return derivation.bands.length === 1
-        ? `Automatic: ${derivation.samples} ${word} at ${derivation.bands[0].minutes} minutes a run`
-        : `Automatic: ${derivation.samples} ${word}, run separately in `
-          + `${derivation.bands.length} resolution bands`;
-    }
     return derivation.unit === "hour"
       ? `Automatic: ${derivation.samples} ${word} at ${derivation.minutes} minutes a run`
       : `Automatic: ${derivation.samples} ${word} entered above`;
@@ -3235,40 +3309,43 @@ function requiredAdditions(remaining, shared) {
   // hourly rate. They are a fixed cost per batch rather than per sample, which
   // is why they cannot be folded into a samples-per-hour figure and why they
   // get a line of their own: on a small batch they are most of the session.
-  Object.keys(THROUGHPUT).forEach(id => {
+  // Extra resolutions or gas modes fold into one combined run rather than
+  // separate repeats, but each one still needs its own calibration standards.
+  THROUGHPUT.forEach(id => {
     if (!(remaining[id] > 0)) return;
 
-    const rule = THROUGHPUT[id];
-
-    // The HR-SF reruns calibration in every resolution band it books, not once
-    // per booking, since each band is a fully separate run.
     if (id === "elem-hr") {
       const { bands, needed } = resolutionBandsFor();
       if (needed.length === 0) return;
 
-      const perBand = needed.map(band =>
-        runsToHours(rule.calibrationRuns, minutesPerRunFor(id, bands[band].length)));
+      const elements = needed.reduce((sum, band) => sum + bands[band].length, 0);
+      const minutes = minutesPerRunFor(id, elements, needed.length);
+      const standards = calibrationStandardsFor(needed.length);
 
       additions.push({
         itemId: id,
-        quantity: perBand.reduce((sum, hours) => sum + hours, 0),
+        quantity: runsToHours(standards, minutes),
         calibration: true,
         reason: needed.length === 1
-          ? `${rule.calibrationRuns} calibration standards at ${minutesPerRunFor(id, bands[needed[0]].length)} minutes a run`
-          : `${rule.calibrationRuns} calibration standards in each of ${needed.length} separate `
-            + `resolution runs (${needed.map(b => RESOLUTION_LABEL[b]).join(", ")})`
+          ? `${standards} calibration standards at ${minutes} minutes a run`
+          : `${standards} calibration standards at ${minutes} minutes a run, `
+            + `${needed.length} resolutions (${needed.map(b => RESOLUTION_LABEL[b]).join(", ")}) in one run`
       });
       return;
     }
 
-    const minutes = minutesPerRunFor(id, state.elements.size);
-    if (!minutes || !rule.calibrationRuns) return;
+    const modes = id === "elem-quad" ? quadModesNeeded() : 1;
+    const minutes = minutesPerRunFor(id, state.elements.size, modes);
+    if (!minutes) return;
 
+    const standards = calibrationStandardsFor(modes);
     additions.push({
       itemId: id,
-      quantity: runsToHours(rule.calibrationRuns, minutes),
+      quantity: runsToHours(standards, minutes),
       calibration: true,
-      reason: `${rule.calibrationRuns} calibration standards at ${minutes} minutes a run`
+      reason: modes > 1
+        ? `${standards} calibration standards at ${minutes} minutes a run, ${modes} gas modes in one run`
+        : `${standards} calibration standards at ${minutes} minutes a run`
     });
   });
 
