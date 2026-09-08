@@ -1491,6 +1491,19 @@ const MATERIAL_GROUPS = [
 
 /** What the visitor wants to know. Option ids join their group as "group:option". */
 const ANALYSES = [
+  { id: "prep", name: "Sample preparation",
+    hint: "Do your samples need preparation such as mineral separation or dissolution?",
+    note: "Rock specimens need mineral separation for U-Pb dating. For ICP-MS analyses, samples "
+        + "need to be in solution form. Some analytical packages include sample preparation "
+        + "already, and those are priced as a single line rather than added together.",
+    options: [
+      { id: "crush",       name: "Crushing" },
+      { id: "minsep",      name: "Mineral separation" },
+      { id: "dissolution", name: "Dissolution" },
+      { id: "wetchem",     name: "Wet chemistry & leaching" },
+      { id: "other",       name: "Other (specify)", other: true }
+    ]},
+
   // Major elements were withdrawn from commercial service, 2 September 2026, so
   // this heading no longer has anything to narrow: same options: [] pattern as
   // "Laser ablation (in situ)" below, with "elemental:trace" kept as the facet
@@ -1526,19 +1539,6 @@ const ANALYSES = [
     options: [
       { id: "upb",  name: "U-Pb" },
       { id: "luhf", name: "Lu-Hf" }
-    ]},
-
-  { id: "prep", name: "Sample preparation",
-    hint: "Do your samples need preparation such as mineral separation or dissolution?",
-    note: "Rock specimens need mineral separation for U-Pb dating. For ICP-MS analyses, samples "
-        + "need to be in solution form. Some analytical packages include sample preparation "
-        + "already, and those are priced as a single line rather than added together.",
-    options: [
-      { id: "crush",       name: "Crushing" },
-      { id: "minsep",      name: "Mineral separation" },
-      { id: "dissolution", name: "Dissolution" },
-      { id: "wetchem",     name: "Wet chemistry & leaching" },
-      { id: "other",       name: "Other (specify)", other: true }
     ]}
 ];
 
