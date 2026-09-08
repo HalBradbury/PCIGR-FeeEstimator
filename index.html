@@ -1640,7 +1640,12 @@ const ANALYSIS_FACETS = {
 
   "prep-crush":  ["prep:crush"],
   "prep-leach":  ["prep:wetchem"],
-  "prep-bomb":   ["prep:dissolution"],
+  // Also reachable under Radiogenic isotope ratios, not only under Sample
+  // preparation, at the user's request, 8 September 2026: whole rock samples
+  // needing radiogenic work may need bomb dissolution first. All four ratios
+  // equally, since PCIGR did not single one out. prep-bomb's own "rock" tag
+  // already keeps this to whole rock; nothing else carries it.
+  "prep-bomb":   ["prep:dissolution", "radiogenic:sr", "radiogenic:nd", "radiogenic:hf", "radiogenic:pb"],
   "prep-micro":  ["prep:dissolution"],
   "prep-minsep": ["prep:minsep"]
 };
@@ -2221,8 +2226,20 @@ function primaryAnalysisGroup(itemId) {
  * within its analysis group that survives the choices made. Where several lines
  * compete, filling them all would charge three times for one set of samples, so
  * each offers its number instead and waits to be asked.
+ *
+ * A line answering to more than one analysis heading (elem-split, under both
+ * Laser ablation and Radiogenic; prep-bomb, under both Sample preparation and
+ * Radiogenic, 8 September 2026) never counts as the unambiguous sole choice,
+ * even when nothing else survives: by definition it serves two different
+ * visitor intents, and PCIGR has not said either one always needs it, so
+ * filling it in automatically would charge for a step that may not apply,
+ * with no click and no "required" reason attached the way a genuine
+ * prerequisite gets. It always offers its number instead.
  */
 function soleLineInGroup(itemId) {
+  const facets = ANALYSIS_FACETS[itemId] || [];
+  if (new Set(facets.map(facet => facet.split(":")[0])).size > 1) return false;
+
   const group = primaryAnalysisGroup(itemId);
   if (!group) return false;
 
@@ -3271,6 +3288,41 @@ function sharedDissolution(remaining) {
 }
 
 /**
+ * All four radiogenic ratios, ordered on the same samples, read as one job
+ * through one dissolution: PCIGR's own note already says so ("Pb, Sr, Nd and
+ * Hf run in sequence from one dissolution"). The four separate lines this
+ * would otherwise produce, and their four separate duplicates, collapse into
+ * one line each below, at the sum of the four items' own (rebated) rates, so
+ * no new number needs confirming: a full four-ratio order costs exactly what
+ * it did as four lines. Requested by the user, 8 September 2026, once a
+ * worked example came back reading busier than "the 4 isotopes from single
+ * samples" it actually was.
+ *
+ * Only the portion every one of the four shares collapses. A ratio ordered
+ * on more samples than the others still prices as its own ordinary line for
+ * the excess, the same split the dissolution rebate already makes for a
+ * partial batch; see `shared.count` below.
+ */
+function allFourRadiogenic(shared) {
+  return Boolean(shared) && shared.members.length === SAME_DISSOLUTION.length;
+}
+
+const COMBINED_RADIOGENIC_NAME = "Sr, Nd, Hf and Pb isotope ratios";
+
+/** Sum of the four ratios' own rebated rates, each rounded exactly as its
+ *  standalone line would be, so the combined total matches four lines' worth
+ *  to the cent. Null, "On request", if any of the four has no published rate. */
+function combinedRadiogenicRate() {
+  let sum = 0;
+  for (const id of SAME_DISSOLUTION) {
+    const rate = rateFor(ITEMS_BY_ID.get(id).item.rates);
+    if (rate === null) return null;
+    sum += Math.round(rate * (1 - DISSOLUTION_REBATE) * 100) / 100;
+  }
+  return Math.round(sum * 100) / 100;
+}
+
+/**
  * Work PCIGR requires rather than work the visitor asked for.
  *
  * Both rules here add cost, so both are shown as their own lines with the
@@ -3280,8 +3332,15 @@ function requiredAdditions(remaining, shared) {
   const additions = [];
 
   // Radiogenic ratios need compositional data first. If the visitor does not
-  // have it, PCIGR measures it, at their cost.
-  const radiogenic = radiogenicLines().filter(id => (remaining[id] || 0) > 0);
+  // have it, PCIGR measures it, at their cost. SAME_DISSOLUTION, not
+  // radiogenicLines(), on purpose: this and the duplicate rule below are
+  // about the four genuine per-sample ratio *products*, not everything that
+  // merely carries a "radiogenic:" facet for chip reachability. prep-bomb
+  // gained such a facet on 8 September 2026 (see "A line answering to more
+  // than one analysis heading" below) without being a ratio measurement
+  // itself; using radiogenicLines() here picked it up as if it were one,
+  // charging it a QA/QC duplicate it should never have had.
+  const radiogenic = SAME_DISSOLUTION.filter(id => (remaining[id] || 0) > 0);
   if (radiogenic.length && state.hasTraceData === false) {
     const samples = Math.max(...radiogenic.map(id => remaining[id]));
     if (samples > 0 && !(remaining["elem-trace"] > 0)) {
@@ -3363,6 +3422,8 @@ function requiredAdditions(remaining, shared) {
   const per = state.qaPer > 0 ? state.qaPer : QA_DUPLICATE_PER;
   const reason = `QA/QC duplicate, one per ${per} samples`;
 
+  const allFour = allFourRadiogenic(shared);
+
   radiogenic.forEach(id => {
     const total = Math.ceil(remaining[id] / per);
     if (total <= 0) return;
@@ -3371,7 +3432,9 @@ function requiredAdditions(remaining, shared) {
       ? Math.min(shared.count, remaining[id]) : 0;
     const atRebate = Math.min(total, Math.ceil(rebatedSamples / per));
 
-    if (atRebate > 0) {
+    // The rebated portion of the four canonical ratios shares one combined
+    // duplicate line below instead, once all four are present together.
+    if (atRebate > 0 && !(allFour && SAME_DISSOLUTION.includes(id))) {
       additions.push({ itemId: id, quantity: atRebate, duplicate: true,
                        rebate: DISSOLUTION_REBATE, reason });
     }
@@ -3379,6 +3442,18 @@ function requiredAdditions(remaining, shared) {
       additions.push({ itemId: id, quantity: total - atRebate, duplicate: true, reason });
     }
   });
+
+  // rebatedSamples is shared.count for every one of the four here (each has
+  // at least that many, by definition of the shared count), so every one of
+  // them apportions the identical duplicate count at the rebate; one line
+  // covers all four rather than four identical ones.
+  if (allFour) {
+    const combinedDuplicates = Math.ceil(shared.count / per);
+    if (combinedDuplicates > 0) {
+      additions.push({ combinedRadiogenic: true, quantity: combinedDuplicates,
+                       duplicate: true, rebate: DISSOLUTION_REBATE, reason });
+    }
+  }
 
   return additions;
 }
@@ -3395,6 +3470,7 @@ function computeEstimate() {
 
   const shared = isEnquireTier() ? null : sharedDissolution(remaining);
   const additions = requiredAdditions(remaining, shared);
+  const allFour = allFourRadiogenic(shared);
 
   CATALOGUE.forEach(category => {
     category.items.forEach(item => {
@@ -3406,7 +3482,9 @@ function computeEstimate() {
       const rebated = shared && shared.members.includes(item.id)
         ? Math.min(shared.count, quantity) : 0;
 
-      if (rebated > 0) {
+      // The rebated portion of the four canonical ratios shares one combined
+      // line below instead, once all four are present together.
+      if (rebated > 0 && !(allFour && SAME_DISSOLUTION.includes(item.id))) {
         const discounted = Math.round(rate * (1 - DISSOLUTION_REBATE) * 100) / 100;
         lines.push({
           name: item.name, category: category.name, quantity: rebated, unit: item.unit,
@@ -3426,7 +3504,40 @@ function computeEstimate() {
     });
   });
 
+  if (allFour) {
+    const rate = combinedRadiogenicRate();
+    lines.push({
+      name: COMBINED_RADIOGENIC_NAME,
+      category: ITEMS_BY_ID.get("mc-nd").category.name,
+      quantity: shared.count,
+      unit: "sample",
+      rate,
+      rebate: DISSOLUTION_REBATE,
+      total: rate === null ? 0 : rate * shared.count
+    });
+  }
+
   additions.forEach(addition => {
+    // combinedRadiogenicRate() is already the four ratios' own rebated rates
+    // summed, so unlike the ordinary path just below, this rate is never
+    // discounted a second time here even though addition.rebate is still set,
+    // purely so the line still carries its "10% off" badge.
+    if (addition.combinedRadiogenic) {
+      const rate = combinedRadiogenicRate();
+      lines.push({
+        name: addition.duplicate ? `${COMBINED_RADIOGENIC_NAME} duplicate` : COMBINED_RADIOGENIC_NAME,
+        category: ITEMS_BY_ID.get("mc-nd").category.name,
+        quantity: addition.quantity,
+        unit: "sample",
+        rate,
+        required: true,
+        rebate: addition.rebate,
+        reason: addition.reason,
+        total: rate === null ? 0 : rate * addition.quantity
+      });
+      return;
+    }
+
     const { item, category } = ITEMS_BY_ID.get(addition.itemId);
     const listed = rateFor(item.rates);
     const rate = (listed !== null && addition.rebate)
@@ -3510,7 +3621,10 @@ function renderRates() {
 
 /** Is any radiogenic isotope ratio work actually booked? */
 function hasRadiogenicWork() {
-  return radiogenicLines().some(id => effectiveQuantity(id).quantity > 0);
+  // SAME_DISSOLUTION, not radiogenicLines(): the QA/QC control should not
+  // appear over a line, such as prep-bomb, that will never actually attract
+  // a duplicate. See the note in requiredAdditions().
+  return SAME_DISSOLUTION.some(id => effectiveQuantity(id).quantity > 0);
 }
 
 function renderEstimate(estimate) {
