@@ -1674,6 +1674,26 @@ const FACETS = [
    new hazard. */
 const CATALOGUE = [
   {
+    name: "Sample preparation",
+    meta: "Wet chemistry & mineral separation",
+    note: "Available only for samples we go on to analyse.",
+    items: [
+      { id: "prep-crush",   name: "Rock crushing",                              unit: "sample", rates: [180, 270, 360], tags: ["rock","sulfide"], instruments: ["prep"] },
+      { id: "prep-leach",   name: "Leaching for radiogenic isotope ratios",     unit: "sample", rates: [105, 160, 220], tags: ["rock","carbonate"], instruments: ["prep"],
+        note: "Oceanic basalts require leaching. Contact us if unaltered isotope ratios matter to your study." },
+      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock"], instruments: ["prep"],
+        note: "Needed above about 60% SiO2, and at lower silica where accessory minerals such as zircon, apatite or monazite are present." },
+      { id: "prep-micro",   name: "Microwave dissolution",                      unit: "sample", rates: [30, 45, 60],    tags: ["rock","carbonate","organic","sulfide"], instruments: ["prep"] },
+      // "rock" and "garnet" removed 2 September 2026: Zircon, Apatite,
+      // Baddeleyite and Monazite are the only materials that reach Sample
+      // preparation at all, and mineral separation is the only line they
+      // reach there. Whole rock and Garnet no longer show this line.
+      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["zircon"], instruments: ["prep"],
+        caution: true,
+        note: "Charged even if no zircon is recovered." }
+    ]
+  },
+  {
     name: "Technician time",
     meta: "Labour",
     note: "Setup and tuning fill in automatically from ICP-MS hours only, solution or laser ablation: 2 h per 24-hour interval of instrument time, at the technician rate. It does not apply to MC-ICP-MS, TIMS or IRMS work, which is billed per sample. Type into either field to override the automatic figure; your value replaces it rather than adding to it. Setup beyond the standard allowance is charged at the instrument's own hourly (gas) rate, so book that time as instrument hours above instead.",
@@ -1808,26 +1828,6 @@ const CATALOGUE = [
       { id: "luhf-grt", name: "Garnet, apatite: ID-MC-ICP-MS", unit: "sample", rates: [2250, 3400, 4500],
         tags: ["garnet","rock"], instruments: ["mc"],
         note: "Contact Dr. Matthijs Smit (msmit@eoas.ubc.ca) with questions about Lu-Hf geochronology." }
-    ]
-  },
-  {
-    name: "Sample preparation",
-    meta: "Wet chemistry & mineral separation",
-    note: "Available only for samples we go on to analyse.",
-    items: [
-      { id: "prep-crush",   name: "Rock crushing",                              unit: "sample", rates: [180, 270, 360], tags: ["rock","sulfide"], instruments: ["prep"] },
-      { id: "prep-leach",   name: "Leaching for radiogenic isotope ratios",     unit: "sample", rates: [105, 160, 220], tags: ["rock","carbonate"], instruments: ["prep"],
-        note: "Oceanic basalts require leaching. Contact us if unaltered isotope ratios matter to your study." },
-      { id: "prep-bomb",    name: "High-pressure (bomb) dissolution",           unit: "sample", rates: [165, 245, 330], tags: ["rock"], instruments: ["prep"],
-        note: "Needed above about 60% SiO2, and at lower silica where accessory minerals such as zircon, apatite or monazite are present." },
-      { id: "prep-micro",   name: "Microwave dissolution",                      unit: "sample", rates: [30, 45, 60],    tags: ["rock","carbonate","organic","sulfide"], instruments: ["prep"] },
-      // "rock" and "garnet" removed 2 September 2026: Zircon, Apatite,
-      // Baddeleyite and Monazite are the only materials that reach Sample
-      // preparation at all, and mineral separation is the only line they
-      // reach there. Whole rock and Garnet no longer show this line.
-      { id: "prep-minsep",  name: "Mineral separation for U-Pb geochronology",  unit: "sample", rates: [350, 525, 700], tags: ["zircon"], instruments: ["prep"],
-        caution: true,
-        note: "Charged even if no zircon is recovered." }
     ]
   }
 ];
@@ -3341,15 +3341,19 @@ function requiredAdditions(remaining, shared) {
   // itself; using radiogenicLines() here picked it up as if it were one,
   // charging it a QA/QC duplicate it should never have had.
   const radiogenic = SAME_DISSOLUTION.filter(id => (remaining[id] || 0) > 0);
-  if (radiogenic.length && state.hasTraceData === false) {
-    const samples = Math.max(...radiogenic.map(id => remaining[id]));
-    if (samples > 0 && !(remaining["elem-trace"] > 0)) {
-      additions.push({
-        itemId: "elem-trace",
-        quantity: samples,
-        reason: "Trace element concentrations are required for accurate analyses"
-      });
-    }
+  const radiogenicMax = radiogenic.length ? Math.max(...radiogenic.map(id => remaining[id])) : 0;
+
+  // Tracked separately from remaining["elem-trace"], which this rule does not
+  // touch: the duplicate rule further below needs to know this quantity even
+  // though it never reaches `remaining[]` itself.
+  let requiredTraceQuantity = 0;
+  if (radiogenicMax > 0 && state.hasTraceData === false && !(remaining["elem-trace"] > 0)) {
+    requiredTraceQuantity = radiogenicMax;
+    additions.push({
+      itemId: "elem-trace",
+      quantity: radiogenicMax,
+      reason: "Trace element concentrations are required for accurate analyses"
+    });
   }
 
   // Rock specimens have to be separated before they can be dated, so the line
@@ -3453,6 +3457,33 @@ function requiredAdditions(remaining, shared) {
       additions.push({ combinedRadiogenic: true, quantity: combinedDuplicates,
                        duplicate: true, rebate: DISSOLUTION_REBATE, reason });
     }
+  }
+
+  // A duplicate of a radiogenic ratio needs the same trace-element
+  // characterization and, for whole rock, the same bomb dissolution redone,
+  // not just the ratio remeasured, so both attract a duplicate of their own
+  // too, at the user's request, 8 September 2026, "for this kind of
+  // request". Scoped to the radiogenic batch specifically, never to an
+  // ordinary trace-elements-only or prep-only booking: only whichever of
+  // each item's own samples overlap with the largest radiogenic quantity
+  // counts, the same reference point the trace-element prerequisite above
+  // already uses. Never rebated, since neither item is part of the shared
+  // dissolution the 10% applies to.
+  //
+  // elem-trace's own quantity has to fold in requiredTraceQuantity as well as
+  // remaining["elem-trace"]: when trace data is missing, the prerequisite
+  // above adds elem-trace as a required addition rather than updating
+  // remaining[], so reading remaining[] alone would miss it and silently
+  // skip the duplicate for the exact case this request was mainly about.
+  if (radiogenic.length) {
+    ["elem-trace", "prep-bomb"].forEach(id => {
+      const ownQuantity = id === "elem-trace"
+        ? Math.max(remaining[id] || 0, requiredTraceQuantity)
+        : (remaining[id] || 0);
+      const eligible = Math.min(ownQuantity, radiogenicMax);
+      const total = Math.ceil(eligible / per);
+      if (total > 0) additions.push({ itemId: id, quantity: total, duplicate: true, reason });
+    });
   }
 
   return additions;
